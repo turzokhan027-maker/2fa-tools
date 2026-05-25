@@ -768,19 +768,20 @@ color: rgba(156, 163, 175, 0.4);
             document.getElementById('historyCount').textContent = history.length + ' saved';
             
             if(history.length === 0) {
-                list.innerHTML = '<p class=&quot;empty-state&quot;>No codes generated yet</p>';
+                list.innerHTML = '<p class=' + String.fromCharCode(34) + 'empty-state' + String.fromCharCode(34) + '>No codes generated yet</p>';
                 return;
             }
             
-            list.innerHTML = history.map(i => 
-                '<div class=&quot;history-item&quot;>' +
-                    '<div class=&quot;history-code&quot;>' + i.cod + '</div>' +
-                    '<div class=&quot;history-details&quot;>' +
-                        '<div class=&quot;history-key&quot;>Key: ' + i.sec + '</div>' +
-                        '<div class=&quot;history-time&quot;>' + i.time + '</div>' +
-                    '</div>' +
-                '</div>'
-            ).join('');
+            let html = '';
+            for(let i = 0; i < history.length; i++) {
+                html += '<div class=' + String.fromCharCode(34) + 'history-item' + String.fromCharCode(34) + '>';
+                html += '<div class=' + String.fromCharCode(34) + 'history-code' + String.fromCharCode(34) + '>' + history[i].cod + '</div>';
+                html += '<div class=' + String.fromCharCode(34) + 'history-details' + String.fromCharCode(34) + '>';
+                html += '<div class=' + String.fromCharCode(34) + 'history-key' + String.fromCharCode(34) + '>Key: ' + history[i].sec + '</div>';
+                html += '<div class=' + String.fromCharCode(34) + 'history-time' + String.fromCharCode(34) + '>' + history[i].time + '</div>';
+                html += '</div></div>';
+            }
+            list.innerHTML = html;
         }
         
         document.getElementById('secretKey').addEventListener('keypress', function(e) {
