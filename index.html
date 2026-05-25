@@ -646,7 +646,7 @@ color: rgba(156, 163, 175, 0.4);
             </div>
             <div class='input-group'>
                 <label>Enter your 2FA Secret Key:</label>
-                <input type='text' id='keyInput' placeholder='JBSWY3DPEHPK3PXP'>
+                <input type='text' id='keyInput' placeholder='JBSWY3DPEHPK3PXP' autocomplete='off'>
             </div>
             <button id='generateBtn'>🔑 Generate Code</button>
             <div id='codeBox' class='code-box'>
@@ -701,9 +701,14 @@ color: rgba(156, 163, 175, 0.4);
         }
         
         function doGenerate() {
-            var input = document.getElementById('keyInput');
-            var secret = input.value.trim().toUpperCase().replace(/\s/g, '');
-            if (!secret) { alert('⚠️ Enter key!'); return; }
+            var inputEl = document.getElementById('keyInput');
+            var secret = inputEl.value.trim().toUpperCase().replace(/\s/g, '');
+            
+            if (!secret) { 
+                alert('⚠️ Enter key!'); 
+                return; 
+            }
+            
             var code;
             try { 
                 code = makeTOTP(secret);
@@ -713,36 +718,75 @@ color: rgba(156, 163, 175, 0.4);
                 alert('❌ Invalid Key'); 
                 return; 
             }
-            document.getElementById('codeValue').textContent = code;
-            document.getElementById('codeBox').style.display = 'block';
-            navigator.clipboard.writeText(code);
-            showCopyMsg();
+            
+            var codeEl = document.getElementById('codeValue');
+            var boxEl = document.getElementById('codeBox');
+            
+            codeEl.textContent = code;
+            boxEl.style.display = 'block';
+            
+            try {
+                navigator.clipboard.writeText(code).then(function() {
+                    showCopyMsg();
+                }).catch(function(err) {
+                    console.error('Copy error:', err);
+                });
+            } catch (e) {
+                console.error('Clipboard error:', e);
+            }
+            
             saveToHistory(secret, code);
-            input.value = '';
+            
+            inputEl.value = '';
+            inputEl.blur();
         }
         
         function showCopyMsg() {
             var msg = document.getElementById('copyMsg');
-            msg.className = 'copy-msg visible';
-            setTimeout(function() { msg.className = 'copy-msg'; }, 2000);
+            if (msg) {
+                msg.className = 'copy-msg visible';
+                setTimeout(function() { 
+                    msg.className = 'copy-msg'; 
+                }, 2000);
+            }
         }
         
         function saveToHistory(key, code) {
             var now = new Date();
-            var timeStr = now.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
-            historyData.unshift({ key: key, code: code, time: timeStr });
-            if (historyData.length > 20) historyData = historyData.slice(0, 20);
+            var timeStr = now.toLocaleString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: true 
+            });
+            
+            historyData.unshift({ 
+                key: key, 
+                code: code, 
+                time: timeStr 
+            });
+            
+            if (historyData.length > 20) {
+                historyData = historyData.slice(0, 20);
+            }
+            
             updateHistory();
         }
         
         function updateHistory() {
             var content = document.getElementById('historyContent');
             var badge = document.getElementById('historyBadge');
+            
+            if (!content || !badge) return;
+            
             badge.textContent = historyData.length + ' saved';
+            
             if (historyData.length === 0) {
                 content.innerHTML = '<p class=empty-msg>No codes generated yet</p>';
                 return;
             }
+            
             var html = '';
             for (var i = 0; i < historyData.length; i++) {
                 var item = historyData[i];
@@ -753,14 +797,25 @@ color: rgba(156, 163, 175, 0.4);
                 html += '<div class=history-time>' + item.time + '</div>';
                 html += '</div></div>';
             }
+            
             content.innerHTML = html;
         }
         
         window.onload = function() {
-            document.getElementById('generateBtn').onclick = doGenerate;
-            document.getElementById('keyInput').onkeypress = function(e) {
-                if (e.key === 'Enter') doGenerate();
-            };
+            var btn = document.getElementById('generateBtn');
+            var input = document.getElementById('keyInput');
+            
+            if (btn) {
+                btn.onclick = doGenerate;
+            }
+            
+            if (input) {
+                input.onkeypress = function(e) {
+                    if (e.key === 'Enter') {
+                        doGenerate();
+                    }
+                };
+            }
         };
     </script>
 </body>
