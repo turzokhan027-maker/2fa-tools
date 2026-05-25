@@ -585,16 +585,16 @@ color: rgba(156, 163, 175, 0.4);
     </div>
 </div>
 
-<div id="tool-2fa" class="section">
-<div class="tool-wrapper">
-<iframe id="iframe-2fa" class="responsive-iframe" srcdoc="
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2FA Authenticator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/otplib/12.0.1/otplib-browser.min.js"></script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700;800&amp;display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         :root {
             --bg: rgb(10, 11, 18);
             --card-bg: rgb(21, 23, 37);
@@ -606,163 +606,85 @@ color: rgba(156, 163, 175, 0.4);
             --border: rgba(255, 255, 255, 0.05);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); color: #fff; min-height: 100vh; padding: 20px 12px; display: flex; justify-content: center; align-items: flex-start; }
-        .container { max-width: 520px; width: 100%; margin: 0 auto; }
-        .main-card { background: var(--card-bg); border-radius: 24px; padding: 30px 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid var(--border); margin-bottom: 24px; }
+        body { background: var(--bg); color: #fff; min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: flex-start; }
+        .container { max-width: 520px; width: 100%; }
+        .main-card { background: var(--card-bg); border-radius: 24px; padding: 30px 20px; border: 1px solid var(--border); margin-bottom: 24px; }
         .card-header { text-align: center; margin-bottom: 24px; }
-        .card-header h1 { font-size: clamp(1.3rem, 4vw, 1.7rem); font-weight: 800; background: linear-gradient(135deg, #fff 40%, var(--text-gray)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; line-height: 1.3; }
-        .card-header p { font-size: 0.8rem; color: var(--text-gray); }
+        .card-header h1 { font-size: 1.7rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
         .input-group { margin-bottom: 20px; }
         label { display: block; font-weight: 600; margin-bottom: 10px; color: #e2e8f0; font-size: 0.875rem; }
-        input[type='text'] { width: 100%; padding: 14px; border: 2px solid rgb(30, 41, 59); border-radius: 14px; font-size: 0.95rem; color: #fff; background: var(--input-bg); font-family: 'Courier New', monospace; font-weight: 600; }
-        input[type='text']:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
-        button { width: 100%; padding: 14px; background: var(--btn-grad); color: #fff; border: none; border-radius: 14px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(168, 85, 247, 0.3); }
-        button:hover { transform: translateY(-2px); opacity: 0.95; }
-        .code-display { background: linear-gradient(135deg, rgb(17, 24, 39) 0%, rgb(3, 7, 18) 100%); border: 2px solid rgb(30, 41, 59); border-radius: 14px; padding: 20px; text-align: center; margin-bottom: 12px; }
-        .code-label { font-size: 0.8rem; color: var(--primary); font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
-        .totp-code { font-size: clamp(1.5rem, 5vw, 2rem); font-weight: 800; color: rgb(52, 211, 153); font-family: 'Courier New', monospace; letter-spacing: 4px; }
-        .copy-hint { text-align: center; color: rgb(52, 211, 153); font-weight: 700; font-size: 0.85rem; opacity: 0; transition: opacity 0.3s; }
-        .copy-hint.show { opacity: 1; }
-        .history-card { background: var(--card-bg); border-radius: 24px; padding: 24px 20px; border: 1px solid var(--border); max-height: 350px; display: flex; flex-direction: column; width: 100%; }
-        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
-        .history-header h2 { font-size: 1.05rem; color: #f1f5f9; font-weight: 800; }
-        #historyCount { font-size: 0.7rem; color: rgb(192, 132, 252); background: rgba(168, 85, 247, 0.15); padding: 4px 10px; border-radius: 20px; }
-        .history-list { overflow-y: auto; padding-right: 4px; }
-        .history-list::-webkit-scrollbar { width: 6px; }
-        .history-list::-webkit-scrollbar-thumb { background: rgb(30, 41, 59); border-radius: 10px; }
-        .empty-state { text-align: center; color: var(--text-gray); padding: 30px 10px; font-style: italic; font-size: 0.85rem; }
-        .history-item { padding: 12px; background: rgb(17, 23, 38); border-radius: 14px; margin-bottom: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; border: 1px solid rgba(255, 255, 255, 0.02); }
-        .history-code { font-size: 1.15rem; font-weight: 700; color: rgb(56, 189, 248); font-family: 'Courier New', monospace; }
-        .history-details { text-align: right; }
-        .history-key { font-size: 0.7rem; color: var(--text-gray); word-break: break-all; font-family: 'Courier New', monospace; }
-        .history-time { font-size: 0.65rem; color: rgb(100, 116, 139); font-weight: 600; }
+        input[type='text'] { width: 100%; padding: 14px; border: 2px solid rgb(30, 41, 59); border-radius: 14px; color: #fff; background: var(--input-bg); font-family: 'Courier New', monospace; font-weight: 600; }
+        button { width: 100%; padding: 14px; background: var(--btn-grad); color: #fff; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; }
+        .code-display { background: rgba(0,0,0,0.3); border-radius: 14px; padding: 20px; text-align: center; margin-top: 20px; }
+        .totp-code { font-size: 2.5rem; font-weight: 800; color: rgb(52, 211, 153); letter-spacing: 4px; }
+        .history-card { background: var(--card-bg); border-radius: 24px; padding: 20px; border: 1px solid var(--border); }
+        .history-item { padding: 12px; background: rgb(17, 23, 38); border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
-    <div class='container'>
-        <div class='main-card'>
-            <div class='card-header'>
-                <h1>🔐 2FA Authenticator Pro</h1>
-                <p>Secure Time-based One-Time Password Generator</p>
-            </div>
-            <div class='input-group'>
-                <label>Enter your 2FA Secret Key:</label>
-                <input type='text' id='secretKey' placeholder='JBSWY3DPEHPK3PXP' autocomplete='off'>
-            </div>
-            <button onclick='generateCode()'>🔑 Generate Code</button>
-            <div id='codeDisplay' class='code-display' style='display: none;'>
-                <div class='code-label'>Your Code:</div>
-                <div id='totpCode' class='totp-code'>------</div>
-            </div>
-            <p class='copy-hint' id='copyHint'>✓ Code copied to clipboard!</p>
+
+<div class="container">
+    <div class="main-card">
+        <div class="card-header">
+            <h1>🔐 2FA Authenticator</h1>
+            <p style="color: var(--text-gray);">Secure Code Generator</p>
         </div>
-        <div class='history-card'>
-            <div class='history-header'>
-                <h2>📋 Recent Codes</h2>
-                <span id='historyCount'>0 saved</span>
-            </div>
-            <div id='historyList' class='history-list'>
-                <p class='empty-state'>No codes generated yet</p>
-            </div>
+        <div class="input-group">
+            <label>Enter Secret Key:</label>
+            <input type="text" id="secret-key" placeholder="JBSWY3DPEHPK3PXP">
+        </div>
+        <button onclick="generateAndSave()">🔑 Generate Code</button>
+        <div class="code-display">
+            <div id="2fa-result" class="totp-code">------</div>
         </div>
     </div>
-    <script>
-        const BASE32_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-        function base32Decode(b32) {
-            b32 = b32.toUpperCase().replace(/=+$/, '');
-            let bits = '';
-            for (let i = 0; i < b32.length; i++) {
-                const val = BASE32_CHARS.indexOf(b32[i]);
-                if (val === -1) throw new Error('Invalid base32');
-                bits += val.toString(2).padStart(5, '0');
-            }
-            const bytes = [];
-            for (let i = 0; i + 8 <= bits.length; i += 8) bytes.push(parseInt(bits.substr(i, 8), 2));
-            return new Uint8Array(bytes);
+
+    <div class="history-card">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <h2>📋 History</h2>
+            <span id="historyCount">0 saved</span>
+        </div>
+        <div id="historyList">
+            <p style="text-align:center; color:gray;">No codes yet</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function generateAndSave() {
+        const keyInput = document.getElementById('secret-key');
+        const secret = keyInput.value.trim().replace(/\s/g, '');
+        
+        if(!secret) { alert('Please enter key!'); return; }
+
+        try {
+            const code = otplib.totp.generate(secret);
+            document.getElementById('2fa-result').innerText = code;
+            navigator.clipboard.writeText(code);
+            addHist(secret, code);
+            keyInput.value = "";
+        } catch (err) {
+            alert('Invalid Secret Key!');
         }
-        function hmacSha1Sync(key, msg) {
-            const bs = 64;
-            if (key.length > bs) key = sha1(key);
-            if (key.length < bs) { const p = new Uint8Array(bs); p.set(key); key = p; }
-            const ik = new Uint8Array(bs), ok = new Uint8Array(bs);
-            for (let i = 0; i < bs; i++) { ik[i] = key[i] ^ 0x36; ok[i] = key[i] ^ 0x5c; }
-            return sha1(concat(ok, sha1(concat(ik, msg))));
-        }
-        function sha1(data) {
-            if (!(data instanceof Uint8Array)) data = new Uint8Array(data);
-            let h0 = 0x67452301, h1 = 0xEFCDAB89, h2 = 0x98BADCFE, h3 = 0x10325476, h4 = 0xC3D2E1F0;
-            const ml = data.length * 8, pl = Math.ceil((ml + 65) / 512) * 512 / 8, p = new Uint8Array(pl);
-            p.set(data); p[data.length] = 0x80;
-            const view = new DataView(p.buffer); view.setUint32(pl - 4, ml & 0xffffffff, false);
-            for (let i = 0; i < pl; i += 64) {
-                const w = new Uint32Array(80);
-                for (let j = 0; j < 16; j++) view.setUint32(i + j * 4, false);
-                for (let j = 16; j < 80; j++) w[j] = ((w[j-3] ^ w[j-8] ^ w[j-14] ^ w[j-16]) << 1 | (w[j-3] ^ w[j-8] ^ w[j-14] ^ w[j-16]) >>> 31) & 0xffffffff;
-                let a = h0, b = h1, c = h2, d = h3, e = h4;
-                for (let j = 0; j < 80; j++) {
-                    let f, k;
-                    if (j < 20) { f = (b & c) | ((~b) & d); k = 0x5A827999; }
-                    else if (j < 40) { f = b ^ c ^ d; k = 0x6ED9EBA1; }
-                    else if (j < 60) { f = (b & c) | (b & d) | (c & d); k = 0x8F1BBCDC; }
-                    else { f = b ^ c ^ d; k = 0xCA62C1D6; }
-                    const temp = (((a << 5) | (a >>> 27)) + f + e + k + w[j]) & 0xffffffff;
-                    e = d; d = c; c = ((b << 30) | (b >>> 2)) & 0xffffffff; b = a; a = temp;
-                }
-                h0 = (h0 + a) & 0xffffffff; h1 = (h1 + b) & 0xffffffff; h2 = (h2 + c) & 0xffffffff; h3 = (h3 + d) & 0xffffffff; h4 = (h4 + e) & 0xffffffff;
-            }
-            const res = new Uint8Array(20), resView = new DataView(res.buffer);
-            resView.setUint32(0, h0, false); resView.setUint32(4, h1, false); resView.setUint32(8, h2, false); resView.setUint32(12, h3, false); resView.setUint32(16, h4, false);
-            return res;
-        }
-        function concat(a, b) { const r = new Uint8Array(a.length + b.length); r.set(a); r.set(b, a.length); return r; }
-        function generateTOTP(secret) {
-            secret = secret.replace(/\s/g, '').toUpperCase();
-            const key = base32Decode(secret), epoch = Math.floor(Date.now() / 1000), ts = Math.floor(epoch / 30);
-            const tb = new Uint8Array(8), tv = new DataView(tb.buffer); tv.setUint32(4, ts, false);
-            const hmac = hmacSha1Sync(key, tb), offset = hmac[19] & 0x0f;
-            const truncated = (((hmac[offset] & 0x7f) << 24) | ((hmac[offset + 1] & 0xff) << 16) | ((hmac[offset + 2] & 0xff) << 8) | (hmac[offset + 3] & 0xff));
-            return (truncated % 1000000).toString().padStart(6, '0');
-        }
-        let history = [];
-        function generateCode() {
-            const input = document.getElementById('secretKey');
-            const secret = input.value.trim().toUpperCase().replace(/\s/g, '');
-            if (!secret) { alert('⚠️ Enter key!'); return; }
-            try {
-                const code = generateTOTP(secret);
-                document.getElementById('totpCode').textContent = code;
-                document.getElementById('codeDisplay').style.display = 'block';
-                navigator.clipboard.writeText(code);
-                showHint(); addHist(secret, code); input.value = '';
-            } catch (e) { alert('❌ Invalid Key'); }
-        }
-        function showHint() { const h = document.getElementById('copyHint'); h.classList.add('show'); setTimeout(() => h.classList.remove('show'), 2000); }
-        function addHist(sec, cod) {
-            const time = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
-            history.unshift({ sec, cod, time });
-            if (history.length > 20) history = history.slice(0, 20);
-            renderHist();
-        }
-        function renderHist() {
-            const list = document.getElementById('historyList');
-            document.getElementById('historyCount').textContent = `${history.length} saved`;
-            if(history.length === 0) return;
-            list.innerHTML = history.map(i => `
-                <div class='history-item'>
-                    <div class='history-code'>${i.cod}</div>
-                    <div class='history-details'>
-                        <div class='history-key'>Key: ${i.sec}</div>
-                        <div class='history-time'>${i.time}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-    </script>
+    }
+
+    function addHist(sec, cod) {
+        const list = document.getElementById('historyList');
+        if(list.querySelector('p')) list.innerHTML = '';
+        
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.innerHTML = `<div>${cod}</div><div style="font-size:0.7rem; color:gray;">Key: ${sec.substring(0,6)}...</div>`;
+        list.prepend(item);
+        
+        const count = list.children.length;
+        document.getElementById('historyCount').textContent = `${count} saved`;
+        if(count > 20) list.removeChild(list.lastChild);
+    }
+</script>
+
 </body>
 </html>
-"></iframe>
-</div>
-</div>
 
 <div id="tool-uid" class="section">
 <div class="tool-wrapper">
