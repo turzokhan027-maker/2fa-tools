@@ -411,13 +411,19 @@ color: rgba(156, 163, 175, 0.4);
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
                 <style>
                     .neon-card { background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(51, 65, 85, 0.5); box-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(99, 102, 241, 0.05); border-radius: 28px; }
-                    .neon-bracket { border-left: 3px solid #6366f1; border-right: 3px solid #6366f1; border-radius: 14px; box-shadow: inset 10px 0 15px -10px rgba(99, 102, 241, 0.1), inset -10px 0 15px -10px rgba(99, 102, 241, 0.1); }
+                    .neon-bracket { border-left: 3px solid 
+; border-right: 3px solid 
+; border-radius: 14px; box-shadow: inset 10px 0 15px -10px rgba(99, 102, 241, 0.1), inset -10px 0 15px -10px rgba(99, 102, 241, 0.1); }
                     textarea::-webkit-scrollbar { width: 6px; }
                     textarea::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
-                    textarea::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+                    textarea::-webkit-scrollbar-thumb { background: 
+; border-radius: 10px; }
+                    .copy-feedback { position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.95); color: white; padding: 12px 20px; border-radius: 12px; font-weight: bold; font-size: 13px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999; animation: slideIn 0.3s ease; }
+                    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
                 </style>
             </head>
-            <body class="bg-[#030712] text-slate-200 min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 font-sans select-none">
+            <body class="bg-[
+] text-slate-200 min-h-screen flex flex-col justify-center items-center p-4 sm:p-6 font-sans select-none">
                 <div class="w-full max-w-4xl neon-card p-6 sm:p-8 min-h-[auto] md:min-h-[600px] flex flex-col justify-between transition-all duration-300">
                     <div>
                         <div class="flex flex-col items-center mb-8 border-b border-slate-800 pb-5">
@@ -434,7 +440,7 @@ color: rgba(156, 163, 175, 0.4);
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                             <div class="space-y-5">
                                 <div class="bg-slate-950 p-1.5 rounded-2xl flex space-x-1.5 border border-slate-800/80">
-                                    <button onclick="parent.postMessage({type: &quot;platform&quot;, val: &quot;fb&quot;}, &quot;*&quot;); setPlatform(&quot;fb&quot;)" id="fbBtn" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[11px] sm:text-xs font-black py-3 px-3 rounded-xl flex justify-center items-center transition-all duration-300 shadow-lg cursor-pointer">
+                                    <button onclick="setPlatform(&quot;fb&quot;)" id="fbBtn" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[11px] sm:text-xs font-black py-3 px-3 rounded-xl flex justify-center items-center transition-all duration-300 shadow-lg cursor-pointer">
                                         <i class="fab fa-facebook mr-1.5 text-xs"></i> Facebook
                                         <span class="ml-1 bg-amber-400 text-slate-950 text-[9px] font-black px-1.5 py-0.5 rounded-md">1st</span>
                                     </button>
@@ -502,10 +508,40 @@ color: rgba(156, 163, 175, 0.4);
                     const account1_data = "email1@outlook.com|pass1|refresh_token_1|client_id_1";
                     const account2_data = "email2@outlook.com|pass2|refresh_token_2|client_id_2";
                     const API_URL = "https://toll-376d.onrender.com/get-code";
+                    
+                    function showCopyFeedback(text) {
+                        const existing = document.querySelector(".copy-feedback");
+                        if (existing) existing.remove();
+                        const feedback = document.createElement("div");
+                        feedback.className = "copy-feedback";
+                        feedback.innerHTML = "<i class=\"fas fa-check-circle mr-2\"></i>" + text;
+                        document.body.appendChild(feedback);
+                        setTimeout(() => feedback.remove(), 2000);
+                    }
+                    
+                    function fallbackCopy(text) {
+                        const temp = document.createElement("textarea");
+                        temp.value = text;
+                        temp.style.position = "fixed";
+                        temp.style.left = "-9999px";
+                        document.body.appendChild(temp);
+                        temp.select();
+                        temp.setSelectionRange(0, 99999);
+                        try {
+                            document.execCommand("copy");
+                            document.body.removeChild(temp);
+                            return true;
+                        } catch (e) {
+                            document.body.removeChild(temp);
+                            return false;
+                        }
+                    }
+                    
                     document.getElementById("rawData").addEventListener("input", function(e) {
                         const val = e.target.value.trim();
                         document.getElementById("displayEmail").innerText = val.includes("|") ? val.split("|")[0] : "No Account Loaded";
                     });
+                    
                     function setPlatform(platform) {
                         currentPlatform = platform;
                         const fbBtn = document.getElementById("fbBtn");
@@ -524,6 +560,7 @@ color: rgba(156, 163, 175, 0.4);
                             badgeText.innerText = "Instagram Priority Mode";
                         }
                     }
+                    
                     function loadAccount(num) {
                         const field = document.getElementById("rawData");
                         if(num === 1) field.value = account1_data;
@@ -531,6 +568,7 @@ color: rgba(156, 163, 175, 0.4);
                         document.getElementById("displayEmail").innerText = field.value.split("|")[0];
                         document.getElementById("successMsg").innerText = "Account " + num + " Loaded";
                     }
+                    
                     function clearAll() {
                         document.getElementById("rawData").value = "";
                         document.getElementById("displayEmail").innerText = "No Account Loaded";
@@ -539,6 +577,7 @@ color: rgba(156, 163, 175, 0.4);
                         document.getElementById("successMsg").innerText = "System Standing By";
                         resetButton();
                     }
+                    
                     function getOtpCode() {
                         const rawData = document.getElementById("rawData").value.trim();
                         const actionBtn = document.getElementById("actionBtn");
@@ -578,6 +617,7 @@ color: rgba(156, 163, 175, 0.4);
                             statusDot.className = "fas fa-exclamation-triangle text-amber-500 mr-1.5 text-xs";
                         });
                     }
+                    
                     function resetButton() {
                         const actionBtn = document.getElementById("actionBtn");
                         const btnText = document.getElementById("btnText");
@@ -585,8 +625,24 @@ color: rgba(156, 163, 175, 0.4);
                         actionBtn.className = "flex-[2] bg-slate-900 hover:bg-slate-800 text-slate-300 font-black py-3.5 px-4 rounded-xl border border-slate-800 transition-all duration-200 flex justify-center items-center cursor-pointer text-xs tracking-wider uppercase shadow-md";
                         btnText.innerHTML = "<i class=\"fas fa-bolt mr-2 text-indigo-400\"></i> Extract OTP Code";
                     }
-                    function copyEmail() { const text = document.getElementById("rawData").value.split("|")[0]; if(text) { navigator.clipboard.writeText(text); alert("Email Copied: " + text); } }
-                    function copyCode() { const code = document.getElementById("otpOutput").innerText; if(code && code !== "XXXXXX" && code !== "ERROR" && code !== "CORS ERR") { navigator.clipboard.writeText(code); alert("OTP Code Copied: " + code); } }
+                    
+                    function copyEmail() {
+                        const text = document.getElementById("rawData").value.split("|")[0];
+                        if(text && text !== "No Account Loaded") {
+                            if (fallbackCopy(text)) {
+                                showCopyFeedback("Email Copied: " + text);
+                            }
+                        }
+                    }
+                    
+                    function copyCode() {
+                        const code = document.getElementById("otpOutput").innerText;
+                        if(code && code !== "XXXXXX" && code !== "ERROR" && code !== "CORS ERR" && code !== "SEARCHING") {
+                            if (fallbackCopy(code)) {
+                                showCopyFeedback("OTP Code Copied: " + code);
+                            }
+                        }
+                    }
                 </script>
             </body>
             </html>
