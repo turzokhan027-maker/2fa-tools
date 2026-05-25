@@ -595,213 +595,52 @@ color: rgba(156, 163, 175, 0.4);
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&amp;display=swap');
-        
-        :root { 
-            --primary: 
-; 
-            --bg: 
-; 
-            --card-bg: 
-; 
-            --text-gray: 
-;
-            --btn-grad: linear-gradient(135deg, 
+        :root { --primary: 
+; --bg: 
+; --card-bg: 
+; --text-gray: 
+; --btn-grad: linear-gradient(135deg, 
 , 
-);
-        }
-
+); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        
-        body { 
-            background: var(--bg); 
-            padding: 20px;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .container { 
-            max-width: 800px; 
-            width: 100%;
-        }
-
-        .tool-card {
-            background: var(--card-bg);
-            padding: 40px 30px;
-            border-radius: 45px;
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-
-        .tool-header h2 {
-            color: var(--primary);
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 30px;
-        }
-
-        .input-box {
-            width: 100%;
-            padding: 20px;
-            border-radius: 18px;
-            border: 2px solid 
-;
-            background: 
-;
-            font-weight: 800;
-            font-size: 17px;
-            margin-bottom: 15px;
-            outline: none;
-            text-align: center;
-            color: 
-;
-        }
-
-        .input-box:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
-        }
-
-        .gen-btn {
-            background: var(--btn-grad);
-            color: #fff;
-            border: none;
-            width: 100%;
-            padding: 20px;
-            border-radius: 18px;
-            font-weight: 800;
-            font-size: 17px;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3);
-            margin-bottom: 35px;
-            transition: transform 0.2s;
-        }
-
-        .gen-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .code-box-wrapper { 
-            background: #fff; 
-            border: 3px solid var(--primary); 
-            padding: 15px 45px; 
-            border-radius: 25px; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 20px; 
-            box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
-        }
-
-        .code-display { 
-            font-size: 42px; 
-            font-weight: 800; 
-            color: #000; 
-            letter-spacing: 5px; 
-        }
-
-        .copy-icon {
-            font-size: 24px;
-            color: var(--primary);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .copy-icon:hover {
-            transform: scale(1.2);
-        }
-
-        .auto-copy-label {
-            margin: 12px 0 30px 0;
-            color: var(--text-gray);
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .history-section {
-            text-align: left;
-            border-top: 2px dashed 
-;
-            padding-top: 20px;
-        }
-
-        .history-section h3 {
-            font-size: 18px;
-            font-weight: 800;
-            color: 
-;
-            margin-bottom: 15px;
-        }
-
-        .history-list {
-            height: 250px;
-            overflow-y: auto;
-            background: 
-;
-            border-radius: 20px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .history-list::-webkit-scrollbar {
-            width: 6px;
-        }
-        .history-list::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 10px;
-        }
-
-        .history-item {
-            background: #fff;
-            padding: 15px;
-            border-radius: 15px;
-            font-size: 13px;
-            border-left: 5px solid var(--primary);
-            word-break: break-all;
-            color: 
-;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        body { background: var(--bg); padding: 20px; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .container { max-width: 800px; width: 100%; }
+        .tool-card { background: var(--card-bg); padding: 40px 30px; border-radius: 45px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .tool-header h2 { color: var(--primary); font-size: 32px; font-weight: 800; margin-bottom: 30px; }
+        .input-box { width: 100%; padding: 20px; border-radius: 18px; border: 2px solid 
+; background: 
+; font-weight: 800; font-size: 17px; margin-bottom: 15px; outline: none; text-align: center; color: 
+; }
+        .input-box:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(168, 85, 247, 0.3); }
+        .gen-btn { background: var(--btn-grad); color: #fff; border: none; width: 100%; padding: 20px; border-radius: 18px; font-weight: 800; font-size: 17px; cursor: pointer; text-transform: uppercase; box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3); margin-bottom: 35px; transition: transform 0.2s; }
+        .gen-btn:hover { transform: translateY(-2px); }
+        .code-box-wrapper { background: #fff; border: 3px solid var(--primary); padding: 15px 45px; border-radius: 25px; display: inline-flex; align-items: center; gap: 20px; box-shadow: 0 0 25px rgba(168, 85, 247, 0.4); }
+        .code-display { font-size: 42px; font-weight: 800; color: #000; letter-spacing: 5px; }
+        .copy-icon { font-size: 24px; color: var(--primary); cursor: pointer; transition: transform 0.2s; }
+        .copy-icon:hover { transform: scale(1.2); }
+        .auto-copy-label { margin: 12px 0 30px 0; color: var(--text-gray); font-weight: 600; font-size: 13px; }
+        .history-section { text-align: left; border-top: 2px dashed 
+; padding-top: 20px; }
+        .history-section h3 { font-size: 18px; font-weight: 800; color: 
+; margin-bottom: 15px; }
+        .history-list { height: 250px; overflow-y: auto; background: 
+; border-radius: 20px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .history-list::-webkit-scrollbar { width: 6px; }
+        .history-list::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+        .history-item { background: #fff; padding: 15px; border-radius: 15px; font-size: 13px; border-left: 5px solid var(--primary); word-break: break-all; color: 
+; box-shadow: 0 2px 5px rgba(0,0,0,0.02); animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .history-item b { color: #000; }
-
-        @media (max-width: 600px) {
-            .tool-card {
-                padding: 30px 20px;
-                border-radius: 30px;
-            }
-            .code-display {
-                font-size: 32px;
-                letter-spacing: 3px;
-            }
-            .code-box-wrapper {
-                padding: 12px 30px;
-            }
-        }
+        @media (max-width: 600px) { .tool-card { padding: 30px 20px; border-radius: 30px; } .code-display { font-size: 32px; letter-spacing: 3px; } .code-box-wrapper { padding: 12px 30px; } }
     </style>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'>
 </head>
 <body>
-
 <div class='container'>
     <main class='tool-card'>
-        <div class='tool-header'>
-            <h2>🔐 2FA Authenticator</h2>
-        </div>
-
+        <div class='tool-header'><h2>🔐 2FA Authenticator</h2></div>
         <input type='text' id='secret-key' class='input-box' placeholder='Enter Your 2FA Secret Key' autocomplete='off'>
-        
         <button class='gen-btn' onclick='generateAndSave()'>Get Code</button>
-
         <center>
             <div class='code-box-wrapper'>
                 <span id='2fa-result' class='code-display'>------</span>
@@ -809,109 +648,76 @@ color: rgba(156, 163, 175, 0.4);
             </div>
             <p class='auto-copy-label'>Auto code generated &amp; copied!</p>
         </center>
-
         <div class='history-section'>
             <h3>📋 History</h3>
             <div id='history-container' class='history-list'></div>
         </div>
     </main>
 </div>
-
 <script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js'></script>
 <script>
     const MAX_HISTORY = 20;
-
     function base32ToHex(base32) {
         const base32chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-        let bits = '';
-        let hex = '';
-        
+        let bits = '', hex = '';
         base32 = base32.replace(/=+$/, '').replace(/\s/g, '');
-        
         for (let i = 0; i < base32.length; i++) {
             const val = base32chars.indexOf(base32.charAt(i).toUpperCase());
             if (val === -1) throw new Error('Invalid base32 character in key');
             bits += ('00000' + val.toString(2)).slice(-5);
         }
-        
         for (let i = 0; i + 4 <= bits.length; i += 4) {
             const chunk = bits.substr(i, 4);
             hex = hex + parseInt(chunk, 2).toString(16);
         }
         return hex;
     }
-
     function generateTOTP(secret) {
         const key = base32ToHex(secret);
         const epoch = Math.round(new Date().getTime() / 1000.0);
         const time = ('0000000000000000' + Math.floor(epoch / 30).toString(16)).slice(-16);
-        
         const hmac = CryptoJS.HmacSHA1(CryptoJS.enc.Hex.parse(time), CryptoJS.enc.Hex.parse(key));
         const hmacHex = hmac.toString(CryptoJS.enc.Hex);
-        
         const offset = parseInt(hmacHex.substring(hmacHex.length - 1), 16);
         let otp = (parseInt(hmacHex.substr(offset * 2, 8), 16) & parseInt('7fffffff', 16)) + '';
         otp = (otp).substr(otp.length - 6, 6);
-        
         return otp;
     }
-
     function generateAndSave() {
         const keyInput = document.getElementById('secret-key');
         const originalKey = keyInput.value.trim();
         const key = originalKey.replace(/\s/g, '').toUpperCase();
-        
-        if(!key) {
-            alert('⚠️ Please enter a secret key!');
-            return;
-        }
-
+        if(!key) { alert('⚠️ Please enter a secret key!'); return; }
         try {
             const code = generateTOTP(key);
-            
             document.getElementById('2fa-result').innerText = code;
-            
             navigator.clipboard.writeText(code.toString());
-
             addToHistory(originalKey, code);
-
             keyInput.value = '';
-            
         } catch (error) {
             alert('❌ Invalid 2FA Secret Key! Please verify token parameters.');
             console.error('TOTP Error:', error);
         }
     }
-
     function addToHistory(key, code) {
         const container = document.getElementById('history-container');
-        
         const item = document.createElement('div');
         item.className = 'history-item';
         item.innerHTML = '<b>CODE: ' + code + '</b> | <span style=&quot;opacity:0.7&quot;>KEY: ' + key + '</span>';
-        
         container.insertBefore(item, container.firstChild);
-
         const currentItems = container.getElementsByClassName('history-item');
-        while (currentItems.length > MAX_HISTORY) {
-            container.removeChild(container.lastChild);
-        }
+        while (currentItems.length > MAX_HISTORY) { container.removeChild(container.lastChild); }
     }
-
     function copyManual() {
         const code = document.getElementById('2fa-result').innerText;
         if(code === '------') return;
         navigator.clipboard.writeText(code);
         alert('✓ Code copied: ' + code);
     }
-
     document.getElementById('secret-key').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            generateAndSave();
-        }
+        if (e.key === 'Enter') { generateAndSave(); }
     });
 </script>
-
 </body>
 </html>
 "></iframe>
