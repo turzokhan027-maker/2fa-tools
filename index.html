@@ -636,7 +636,6 @@ color: rgba(156, 163, 175, 0.4);
         .history-key { font-size: 0.7rem; color: rgb(148, 163, 184); word-break: break-all; font-family: Courier New, monospace; }
         .history-time { font-size: 0.65rem; color: rgb(100, 116, 139); font-weight: 600; }
     </style>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js'></script>
 </head>
 <body>
     <div class='container'>
@@ -666,6 +665,7 @@ color: rgba(156, 163, 175, 0.4);
             </div>
         </div>
     </div>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js'></script>
     <script>
         var historyData = [];
         
@@ -686,6 +686,10 @@ color: rgba(156, 163, 175, 0.4);
         }
         
         function makeTOTP(secret) {
+            if (typeof CryptoJS === 'undefined') {
+                alert('⚠️ Loading... Please wait!');
+                return null;
+            }
             var key = base32ToHex(secret);
             var epoch = Math.round(new Date().getTime() / 1000.0);
             var time = ('0000000000000000' + Math.floor(epoch / 30).toString(16)).slice(-16);
@@ -701,8 +705,14 @@ color: rgba(156, 163, 175, 0.4);
             var secret = input.value.trim().toUpperCase().replace(/\s/g, '');
             if (!secret) { alert('⚠️ Enter key!'); return; }
             var code;
-            try { code = makeTOTP(secret); } 
-            catch (e) { alert('❌ Invalid Key'); return; }
+            try { 
+                code = makeTOTP(secret);
+                if (!code) return;
+            } catch (e) { 
+                console.error(e);
+                alert('❌ Invalid Key'); 
+                return; 
+            }
             document.getElementById('codeValue').textContent = code;
             document.getElementById('codeBox').style.display = 'block';
             navigator.clipboard.writeText(code);
@@ -746,9 +756,11 @@ color: rgba(156, 163, 175, 0.4);
             content.innerHTML = html;
         }
         
-        document.getElementById('generateBtn').onclick = doGenerate;
-        document.getElementById('keyInput').onkeypress = function(e) {
-            if (e.key === 'Enter') doGenerate();
+        window.onload = function() {
+            document.getElementById('generateBtn').onclick = doGenerate;
+            document.getElementById('keyInput').onkeypress = function(e) {
+                if (e.key === 'Enter') doGenerate();
+            };
         };
     </script>
 </body>
