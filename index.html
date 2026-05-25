@@ -831,7 +831,7 @@ color: rgba(156, 163, 175, 0.4);
 
         <input type='text' id='secret-key' class='input-box' placeholder='Enter Your 2FA Secret Key'>
         
-        <button class='gen-btn' onclick='generateAndSave()'>Generate 6-Digit Code</button>
+        <button class='gen-btn' onclick='generateAndSave()'>Get Code</button>
 
         <center>
             <div class='code-box-wrapper'>
@@ -1001,22 +1001,31 @@ color: rgba(156, 163, 175, 0.4);
 
     function generateAndSave() {
         const keyInput = document.getElementById('secret-key');
-        const key = keyInput.value.trim().replace(/\s/g, '').toUpperCase();
+        const key = keyInput.value.trim();
         
         if(!key) {
             alert('⚠️ Please enter a secret key!');
             return;
         }
 
+        const cleanKey = key.replace(/\s/g, '').toUpperCase();
+
         try {
-            const code = generateTOTP(key);
+            // 1. Generate TOTP Code
+            const code = generateTOTP(cleanKey);
+            
+            // 2. Show Code in Display Box
             document.getElementById('2fa-result').innerText = code;
             
+            // 3. Auto Copy to Clipboard
             navigator.clipboard.writeText(code.toString());
 
+            // 4. Add to History (Full KEY + CODE)
             addToHistory(key, code);
 
+            // 5. Clear Input Box
             keyInput.value = '';
+            
         } catch (error) {
             alert('❌ Invalid 2FA Secret Key! Please verify token parameters.');
             console.error('TOTP Error:', error);
