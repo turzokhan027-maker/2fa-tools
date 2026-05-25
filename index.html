@@ -829,7 +829,16 @@ color: rgba(156, 163, 175, 0.4);
             <h2>🔐 2FA Authenticator</h2>
         </div>
 
-        <input type='text' id='secret-key' class='input-box' placeholder='Enter Your 2FA Secret Key'>
+        <input 
+            type='text' 
+            id='secret-key' 
+            class='input-box' 
+            placeholder='Enter Your 2FA Secret Key'
+            autocomplete='off'
+            autocorrect='off'
+            autocapitalize='off'
+            spellcheck='false'
+        >
         
         <button class='gen-btn' onclick='generateAndSave()'>Get Code</button>
 
@@ -948,7 +957,6 @@ color: rgba(156, 163, 175, 0.4);
 "></iframe>
 </div>
 </div>
-
     
 <div id="tool-uid" class="section">
 <div class="tool-wrapper">
