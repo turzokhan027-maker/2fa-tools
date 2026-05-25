@@ -9,65 +9,58 @@
         :root { --primary: rgb(168, 85, 247); --bg: rgb(10, 11, 18); --card-bg: rgb(21, 23, 37); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background: var(--bg); color: white; min-height: 100vh; }
-        .section { display: none; padding: 40px; }
+        .section { display: none; width: 100%; padding: 40px; }
         .active { display: block; }
-        .card { background: var(--card-bg); border: 1px solid #334155; padding: 25px; border-radius: 20px; max-width: 600px; margin: auto; }
-        nav { padding: 20px; display: flex; justify-content: center; gap: 20px; border-bottom: 1px solid #1e293b; }
-        button { cursor: pointer; background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; }
+        nav { display: flex; justify-content: center; gap: 20px; padding: 20px; border-bottom: 1px solid #1f2937; }
+        .nav-link { cursor: pointer; color: #9ca3af; font-weight: 600; }
+        .nav-link.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
 <nav>
-    <a onclick="showSection('home')" style="color:var(--primary); cursor:pointer;">Home</a>
-    <a onclick="showSection('tool-2fa')" style="cursor:pointer;">2FA</a>
-    <a onclick="showSection('tool-mail')" style="cursor:pointer;">Mail</a>
-    <a onclick="showSection('tool-uid')" style="cursor:pointer;">UID</a>
+    <a onclick="showSection('home', this)" class="nav-link active">Home</a>
+    <a onclick="showSection('tool-2fa', this)" class="nav-link">2FA AUTH</a>
+    <a onclick="showSection('tool-mail', this)" class="nav-link">API MAIL</a>
+    <a onclick="showSection('tool-uid', this)" class="nav-link">UID CHECKER</a>
 </nav>
 
-<div id="home" class="section active text-center">
-    <h1>Longisir VIP Portal</h1>
-    <p>Integrated Web Automation Engine.</p>
-</div>
+<div id="home" class="section active"><h1>Home Dashboard</h1></div>
 
 <div id="tool-2fa" class="section">
-    <div class="card">
+    <div style="background:var(--card-bg); padding:20px; border-radius:15px;">
         <h2>2FA Authenticator</h2>
-        <input id="secret-key" style="width:100%; padding:10px; margin:10px 0; background:#000; color:#fff;" placeholder="Enter Key">
-        <button onclick="generate2FA()">Generate Code</button>
-        <div id="2fa-result" style="margin-top:15px; font-size:24px; color:#4ade80;">XXXXXX</div>
+        <input id="secret-key" placeholder="Enter Key" style="width:100%; padding:10px; margin:10px 0;">
+        <button onclick="generate2FA()">Generate</button>
+        <div id="2fa-result"></div>
     </div>
 </div>
 
 <div id="tool-mail" class="section">
-    <div class="card">
-        <h2>Mail Extractor</h2>
-        <textarea id="mail-input" style="width:100%; height:100px; margin:10px 0; background:#000; color:#fff;"></textarea>
-        <button onclick="alert('Mail Tool Active')">Extract</button>
+    <div style="background:var(--card-bg); padding:20px; border-radius:15px;">
+        <h2>API MAIL</h2>
+        <textarea id="mail-input" style="width:100%; height:100px;"></textarea>
+        <button onclick="alert('Mail tool working')">Extract</button>
     </div>
 </div>
 
 <div id="tool-uid" class="section">
-    <div class="card">
-        <h2>UID Checker</h2>
-        <textarea id="uid-input" style="width:100%; height:100px; margin:10px 0; background:#000; color:#fff;"></textarea>
-        <button onclick="alert('UID Tool Active')">Check Status</button>
+    <div style="background:var(--card-bg); padding:20px; border-radius:15px;">
+        <h2>UID CHECKER</h2>
+        <textarea id="uid-input" style="width:100%; height:100px;"></textarea>
+        <button onclick="alert('UID tool working')">Check</button>
     </div>
 </div>
 
 <script>
-    function showSection(id) {
+    function showSection(sectionId, element) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+        element.classList.add('active');
     }
 
-    function generate2FA() {
-        const key = document.getElementById('secret-key').value;
-        if(!key) return alert("Key din!");
-        const code = Math.floor(100000 + Math.random() * 900000);
-        document.getElementById('2fa-result').innerText = code;
-    }
+    function generate2FA() { /* 2fa.txt er logic ekhane bosabe */ }
 </script>
-
 </body>
 </html>
