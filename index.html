@@ -725,17 +725,29 @@ color: rgba(156, 163, 175, 0.4);
         }
         let history = [];
         function generateCode() {
-            const input = document.getElementById('secretKey');
-            const secret = input.value.trim().toUpperCase().replace(/\s/g, '');
-            if (!secret) { alert('⚠️ Enter key!'); return; }
-            try {
-                const code = generateTOTP(secret);
-                document.getElementById('totpCode').textContent = code;
-                document.getElementById('codeDisplay').style.display = 'block';
-                navigator.clipboard.writeText(code);
-                showHint(); addHist(secret, code); input.value = '';
-            } catch (e) { alert('❌ Invalid Key'); }
-        }
+    const input = document.getElementById('secretKey');
+    const secret = input.value.trim().toUpperCase().replace(/\s/g, '');
+    
+    // Debugging: কী-এর দৈর্ঘ্য চেক করা
+    console.log("Processing Key:", secret); 
+    
+    if (!secret) { alert('⚠️ Enter key!'); return; }
+    
+    try {
+        const code = generateTOTP(secret);
+        console.log("Generated Code:", code); // কোডটি কি কনসোলে দেখাচ্ছে?
+        
+        document.getElementById('totpCode').textContent = code;
+        document.getElementById('codeDisplay').style.display = 'block';
+        navigator.clipboard.writeText(code);
+        showHint(); 
+        addHist(secret, code);
+        input.value = '';
+    } catch (e) {
+        console.error("Error Detail:", e); // এররটি কী তা দেখাবে
+        alert('❌ Invalid Key! Check console for details.');
+    }
+}
         function showHint() { const h = document.getElementById('copyHint'); h.classList.add('show'); setTimeout(() => h.classList.remove('show'), 2000); }
         function addHist(sec, cod) {
             const time = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
