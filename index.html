@@ -609,14 +609,13 @@ color: rgba(156, 163, 175, 0.4);
 </div>
 
 <script>
-    // ১. TOTP লজিক ফাংশনসমূহ
     const BASE32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
     function base32Decode(b32) {
-        b32 = b32.toUpperCase().replace(/=+$/, '');
+        b32 = b32.replace(/\s+/g, '').toUpperCase();
         let bits = '';
         for (let i = 0; i < b32.length; i++) {
             const val = BASE32.indexOf(b32[i]);
-            if (val === -1) continue;
+            if (val === -1) throw new Error('Invalid Char');
             bits += val.toString(2).padStart(5, '0');
         }
         const bytes = [];
@@ -661,47 +660,32 @@ color: rgba(156, 163, 175, 0.4);
     }
 
     function generateTOTP(secret) {
-        secret = secret.replace(/\s/g, '').toUpperCase();
-        const key = base32Decode(secret), epoch = Math.floor(Date.now() / 1000), ts = Math.floor(epoch / 30);
+        const key = base32Decode(secret);
+        const epoch = Math.floor(Date.now() / 1000), ts = Math.floor(epoch / 30);
         const tb = new Uint8Array(8), tv = new DataView(tb.buffer); tv.setUint32(4, ts, false);
         const hmac = hmacSha1Sync(key, tb), offset = hmac[19] & 0x0f;
         const truncated = (((hmac[offset] & 0x7f) << 24) | ((hmac[offset + 1] & 0xff) << 16) | ((hmac[offset + 2] & 0xff) << 8) | (hmac[offset + 3] & 0xff));
         return (truncated % 1000000).toString().padStart(6, '0');
     }
 
-    // ২. বাটন ক্লিক ও অটোমেশন
     document.getElementById('actionBtn').addEventListener('click', function() {
         const keyInput = document.getElementById('secretKey');
         const secret = keyInput.value.trim();
-        
-        if(!secret) { alert('Please enter your Secret Key!'); return; }
-
+        if(!secret) { alert('Enter key!'); return; }
         try {
             const code = generateTOTP(secret);
-            
-            // ডিসপ্লে আপডেট
             document.getElementById('totpCode').textContent = code;
             document.getElementById('codeDisplay').style.display = 'block';
-
-            // অটো কপি
             navigator.clipboard.writeText(code);
-
-            // হিস্টোরি আপডেট
             const historyList = document.getElementById('historyList');
             const emptyMsg = historyList.querySelector('.empty-msg');
             if(emptyMsg) emptyMsg.style.display = 'none';
-            
             const entry = document.createElement('div');
             entry.style.padding = "8px 0";
             entry.style.borderBottom = "1px solid #1e293b";
-            entry.innerHTML = `<span style="color:#fff">Code: <b>${code}</b></span> | <span style="color:#94a3b8">Key: ${secret.substring(0,8)}...</span>`;
+            entry.innerHTML = `Code: <b>${code}</b> | Key: ${secret.replace(/\s+/g, '').substring(0,8)}...`;
             historyList.prepend(entry);
-
-            // ইনপুট ক্লিয়ার
-            keyInput.value = '';
-        } catch(e) {
-            alert('Invalid Secret Key. Please check the format.');
-        }
+        } catch(e) { alert('Invalid Secret Key'); }
     });
 </script>
 
