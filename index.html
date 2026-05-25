@@ -3,19 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Longisir VIP Portal - Free Tools</title>
+    <title>Longisir VIP Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        :root {
-            --primary: rgb(168, 85, 247);
-            --bg: rgb(10, 11, 18);
-            --card-bg: rgb(21, 23, 37);
-        }
-        body { background: var(--bg); color: white; font-family: 'Plus Jakarta Sans', sans-serif; }
+        :root { --primary: rgb(168, 85, 247); --bg: rgb(10, 11, 18); }
+        body { background: var(--bg); color: white; font-family: sans-serif; }
         .section { display: none; }
         .active { display: block; }
-        .card { background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid #334155; }
     </style>
 </head>
 <body>
@@ -28,33 +22,23 @@
 </nav>
 
 <div id="home" class="section active p-10 text-center">
-    <h1 class="text-3xl font-bold">Welcome to Longisir VIP Portal</h1>
-    <p class="mt-4 text-gray-400">Ecosystem Framework & Analytical Utility Terminal.</p>
+    <h1 class="text-3xl font-bold">Longisir VIP Portal</h1>
 </div>
 
 <div id="tool-2fa" class="section p-10 max-w-lg mx-auto">
-    <div class="card">
-        <h2 class="text-xl font-bold mb-4">2FA Authenticator</h2>
-        <input id="secret-key" class="w-full p-3 bg-gray-800 rounded mb-4" placeholder="Enter Key">
-        <button onclick="generate2FA()" class="w-full bg-purple-600 p-3 rounded">Generate Code</button>
-        <div id="2fa-result" class="mt-4 text-center text-2xl text-green-400 font-mono">XXXXXX</div>
-    </div>
+    <input id="secret-key" class="w-full p-3 bg-gray-800 rounded" placeholder="Key likhun">
+    <button onclick="generate2FA()" class="w-full bg-purple-600 mt-3 p-3 rounded font-bold">Generate Code</button>
+    <div id="2fa-result" class="mt-4 text-center text-2xl text-green-400 font-mono">XXXXXX</div>
 </div>
 
 <div id="tool-mail" class="section p-10 max-w-lg mx-auto">
-    <div class="card">
-        <h2 class="text-xl font-bold mb-4">Mail Extractor</h2>
-        <textarea id="mail-input" class="w-full h-32 bg-gray-800 p-3 rounded"></textarea>
-        <button onclick="alert('Mail tool active')" class="w-full bg-indigo-600 p-3 mt-4 rounded">Extract</button>
-    </div>
+    <textarea id="mail-input" class="w-full h-32 bg-gray-800 p-3 rounded" placeholder="Data paste korun"></textarea>
+    <button onclick="extractMail()" class="w-full bg-indigo-600 mt-3 p-3 rounded font-bold">Extract Now</button>
 </div>
 
 <div id="tool-uid" class="section p-10 max-w-lg mx-auto">
-    <div class="card">
-        <h2 class="text-xl font-bold mb-4">UID Checker</h2>
-        <textarea id="uid-input" class="w-full h-32 bg-gray-800 p-3 rounded"></textarea>
-        <button onclick="alert('UID tool active')" class="w-full bg-red-600 p-3 mt-4 rounded">Check Now</button>
-    </div>
+    <textarea id="uid-input" class="w-full h-32 bg-gray-800 p-3 rounded" placeholder="UID paste korun"></textarea>
+    <button onclick="checkUID()" class="w-full bg-red-600 mt-3 p-3 rounded font-bold">Check Status</button>
 </div>
 
 <script>
@@ -63,11 +47,27 @@
         document.getElementById(id).classList.add('active');
     }
 
+    // 2FA Logic
     function generate2FA() {
+        const key = document.getElementById('secret-key').value;
+        if(!key) return alert("Key din!");
         const code = Math.floor(100000 + Math.random() * 900000);
         document.getElementById('2fa-result').innerText = code;
     }
-</script>
 
+    // Mail Logic
+    function extractMail() {
+        const data = document.getElementById('mail-input').value;
+        if(!data) return alert("Data din!");
+        alert("Extracting..."); // Ekhane tomar API mail-er real logic bosabe
+    }
+
+    // UID Logic
+    function checkUID() {
+        const uids = document.getElementById('uid-input').value;
+        if(!uids) return alert("UID din!");
+        alert("Checking..."); // Ekhane tomar fb chaker-er real logic bosabe
+    }
+</script>
 </body>
 </html>
