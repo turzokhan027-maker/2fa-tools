@@ -844,7 +844,6 @@ color: rgba(156, 163, 175, 0.4);
         <div class='history-section'>
             <h3>📋 History</h3>
             <div id='history-container' class='history-list'>
-                <!-- History items will appear here -->
             </div>
         </div>
     </main>
@@ -855,116 +854,149 @@ color: rgba(156, 163, 175, 0.4);
 
     function base32Decode(base32) {
         const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        base32 = base32.toUpperCase().replace(/=+$/, '').replace(/\s/g, '');
         let bits = '';
-        let hex = '';
-        base32 = base32.replace(/=+$/, '').toUpperCase();
         
         for (let i = 0; i < base32.length; i++) {
-            const val = alphabet.indexOf(base32.charAt(i));
-            if (val === -1) throw new Error('Invalid base32 character');
+            const val = alphabet.indexOf(base32[i]);
+            if (val === -1) throw new Error('Invalid base32 character: ' + base32[i]);
             bits += val.toString(2).padStart(5, '0');
         }
         
+        const bytes = [];
         for (let i = 0; i + 8 <= bits.length; i += 8) {
-            hex += String.fromCharCode(parseInt(bits.substr(i, 8), 2));
+            bytes.push(parseInt(bits.substr(i, 8), 2));
         }
-        return hex;
+        return new Uint8Array(bytes);
     }
 
-    function hmacSha1(key, message) {
+    function hmacSha1(keyBytes, message) {
         const blockSize = 64;
+        let key = keyBytes;
+        
         if (key.length > blockSize) {
-            key = sha1(key);
+            key = sha1Bytes(key);
         }
         if (key.length < blockSize) {
-            key += String.fromCharCode(0).repeat(blockSize - key.length);
+            const padded = new Uint8Array(blockSize);
+            padded.set(key);
+            key = padded;
         }
         
-        let oKeyPad = '';
-        let iKeyPad = '';
+        const oKeyPad = new Uint8Array(blockSize);
+        const iKeyPad = new Uint8Array(blockSize);
+        
         for (let i = 0; i < blockSize; i++) {
-            oKeyPad += String.fromCharCode(key.charCodeAt(i) ^ 0x5c);
-            iKeyPad += String.fromCharCode(key.charCodeAt(i) ^ 0x36);
+            oKeyPad[i] = key[i] ^ 0x5c;
+            iKeyPad[i] = key[i] ^ 0x36;
         }
-        return sha1(oKeyPad + sha1(iKeyPad + message));
+        
+        const innerHash = sha1Bytes(concat(iKeyPad, message));
+        return sha1Bytes(concat(oKeyPad, innerHash));
     }
 
-    function sha1(msg) {
-        function rotateLeft(n, s) { return (n << s) | (n >>> (32 - s)); }
+    function sha1Bytes(data) {
+        let h0 = 0x67452301;
+        let h1 = 0xEFCDAB89;
+        let h2 = 0x98BADCFE;
+        let h3 = 0x10325476;
+        let h4 = 0xC3D2E1F0;
         
-        const blockstart = [];
-        const W = new Array(80);
-        let H0 = 0x67452301, H1 = 0xEFCDAB89, H2 = 0x98BADCFE, H3 = 0x10325476, H4 = 0xC3D2E1F0;
-        let A, B, C, D, E, temp;
+        const ml = data.length * 8;
+        const paddedLength = Math.ceil((ml + 65) / 512) * 64;
+        const padded = new Uint8Array(paddedLength);
+        padded.set(data);
+        padded[data.length] = 0x80;
         
-        msg += String.fromCharCode(0x80);
-        const msgLen = msg.length / 4 + 2;
-        const blockCount = Math.ceil(msgLen / 16);
-        const wordArray = new Array(blockCount);
+        const view = new DataView(padded.buffer);
+        view.setUint32(paddedLength - 4, ml, false);
         
-        for (let i = 0; i < blockCount; i++) {
-            wordArray[i] = new Array(16);
+        for (let i = 0; i < paddedLength; i += 64) {
+            const w = new Uint32Array(80);
+            
             for (let j = 0; j < 16; j++) {
-                wordArray[i][j] = (msg.charCodeAt(i * 64 + j * 4) << 24) | 
-                                  (msg.charCodeAt(i * 64 + j * 4 + 1) << 16) | 
-                                  (msg.charCodeAt(i * 64 + j * 4 + 2) << 8) | 
-                                  (msg.charCodeAt(i * 64 + j * 4 + 3));
+                w[j] = view.getUint32(i + j * 4, false);
             }
+            
+            for (let j = 16; j < 80; j++) {
+                w[j] = leftRotate(w[j-3] ^ w[j-8] ^ w[j-14] ^ w[j-16], 1);
+            }
+            
+            let a = h0, b = h1, c = h2, d = h3, e = h4;
+            
+            for (let j = 0; j < 80; j++) {
+                let f, k;
+                if (j < 20) {
+                    f = (b & c) | ((~b) & d);
+                    k = 0x5A827999;
+                } else if (j < 40) {
+                    f = b ^ c ^ d;
+                    k = 0x6ED9EBA1;
+                } else if (j < 60) {
+                    f = (b & c) | (b & d) | (c & d);
+                    k = 0x8F1BBCDC;
+                } else {
+                    f = b ^ c ^ d;
+                    k = 0xCA62C1D6;
+                }
+                
+                const temp = (leftRotate(a, 5) + f + e + k + w[j]) & 0xffffffff;
+                e = d;
+                d = c;
+                c = leftRotate(b, 30);
+                b = a;
+                a = temp;
+            }
+            
+            h0 = (h0 + a) & 0xffffffff;
+            h1 = (h1 + b) & 0xffffffff;
+            h2 = (h2 + c) & 0xffffffff;
+            h3 = (h3 + d) & 0xffffffff;
+            h4 = (h4 + e) & 0xffffffff;
         }
         
-        wordArray[blockCount - 1][14] = ((msg.length - 1) * 8) / Math.pow(2, 32);
-        wordArray[blockCount - 1][14] = Math.floor(wordArray[blockCount - 1][14]);
-        wordArray[blockCount - 1][15] = ((msg.length - 1) * 8) & 0xffffffff;
+        const result = new Uint8Array(20);
+        const resultView = new DataView(result.buffer);
+        resultView.setUint32(0, h0, false);
+        resultView.setUint32(4, h1, false);
+        resultView.setUint32(8, h2, false);
+        resultView.setUint32(12, h3, false);
+        resultView.setUint32(16, h4, false);
         
-        for (let i = 0; i < blockCount; i++) {
-            for (let t = 0; t < 16; t++) W[t] = wordArray[i][t];
-            for (let t = 16; t < 80; t++) W[t] = rotateLeft(W[t - 3] ^ W[t - 8] ^ W[t - 14] ^ W[t - 16], 1);
-            
-            A = H0; B = H1; C = H2; D = H3; E = H4;
-            
-            for (let t = 0; t < 80; t++) {
-                const s = Math.floor(t / 20);
-                const K = [0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6][s];
-                const f = s === 0 ? (B & C) | (~B & D) : s === 1 || s === 3 ? B ^ C ^ D : (B & C) | (B & D) | (C & D);
-                temp = (rotateLeft(A, 5) + f + E + K + W[t]) & 0xffffffff;
-                E = D; D = C; C = rotateLeft(B, 30); B = A; A = temp;
-            }
-            
-            H0 = (H0 + A) & 0xffffffff;
-            H1 = (H1 + B) & 0xffffffff;
-            H2 = (H2 + C) & 0xffffffff;
-            H3 = (H3 + D) & 0xffffffff;
-            H4 = (H4 + E) & 0xffffffff;
-        }
-        
-        let result = '';
-        [H0, H1, H2, H3, H4].forEach(h => {
-            for (let i = 0; i < h.toString(16).length; i += 2) {
-                result += String.fromCharCode(parseInt(h.toString(16).substr(i, 2), 16));
-            }
-        });
+        return result;
+    }
+
+    function leftRotate(n, s) {
+        return ((n << s) | (n >>> (32 - s))) & 0xffffffff;
+    }
+
+    function concat(a, b) {
+        const result = new Uint8Array(a.length + b.length);
+        result.set(a);
+        result.set(b, a.length);
         return result;
     }
 
     function generateTOTP(secret) {
+        const keyBytes = base32Decode(secret);
         const epoch = Math.floor(Date.now() / 1000);
-        const time = Math.floor(epoch / 30);
-        let timeHex = time.toString(16).padStart(16, '0');
-        let timeBytes = '';
+        const timeStep = Math.floor(epoch / 30);
         
-        for (let i = 0; i < timeHex.length; i += 2) {
-            timeBytes += String.fromCharCode(parseInt(timeHex.substr(i, 2), 16));
-        }
+        const timeBytes = new Uint8Array(8);
+        const timeView = new DataView(timeBytes.buffer);
+        timeView.setUint32(4, timeStep, false);
         
-        const key = base32Decode(secret);
-        const hash = hmacSha1(key, timeBytes);
-        const offset = hash.charCodeAt(hash.length - 1) & 0xf;
-        const binary = ((hash.charCodeAt(offset) & 0x7f) << 24) | 
-                       ((hash.charCodeAt(offset + 1) & 0xff) << 16) | 
-                       ((hash.charCodeAt(offset + 2) & 0xff) << 8) | 
-                       (hash.charCodeAt(offset + 3) & 0xff);
-        const otp = (binary % 1000000).toString().padStart(6, '0');
-        return otp;
+        const hmac = hmacSha1(keyBytes, timeBytes);
+        const offset = hmac[19] & 0x0f;
+        
+        const truncated = (
+            ((hmac[offset] & 0x7f) << 24) |
+            ((hmac[offset + 1] & 0xff) << 16) |
+            ((hmac[offset + 2] & 0xff) << 8) |
+            (hmac[offset + 3] & 0xff)
+        );
+        
+        return (truncated % 1000000).toString().padStart(6, '0');
     }
 
     function generateAndSave() {
