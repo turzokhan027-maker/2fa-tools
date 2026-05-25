@@ -849,167 +849,48 @@ color: rgba(156, 163, 175, 0.4);
     </main>
 </div>
 
+<script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js'></script>
 <script>
     const MAX_HISTORY = 20;
-    const BASE32_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
-    function base32Decode(base32) {
-        base32 = base32.toUpperCase().replace(/=+$/, '').replace(/\s/g, '');
+    function base32ToHex(base32) {
+        const base32chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
         let bits = '';
+        let hex = '';
+        
+        base32 = base32.replace(/=+$/, '').replace(/\s/g, '');
         
         for (let i = 0; i < base32.length; i++) {
-            const val = BASE32_CHARS.indexOf(base32[i]);
-            if (val === -1) throw new Error('Invalid base32 character');
-            bits += val.toString(2).padStart(5, '0');
+            const val = base32chars.indexOf(base32.charAt(i).toUpperCase());
+            if (val === -1) throw new Error('Invalid base32 character in key');
+            bits += ('00000' + val.toString(2)).slice(-5);
         }
         
-        const bytes = [];
-        for (let i = 0; i + 8 <= bits.length; i += 8) {
-            bytes.push(parseInt(bits.substr(i, 8), 2));
+        for (let i = 0; i + 4 <= bits.length; i += 4) {
+            const chunk = bits.substr(i, 4);
+            hex = hex + parseInt(chunk, 2).toString(16);
         }
-        return new Uint8Array(bytes);
-    }
-
-    function hmacSha1Sync(key, message) {
-        const blockSize = 64;
-        
-        if (key.length > blockSize) {
-            key = sha1(key);
-        }
-        if (key.length < blockSize) {
-            const padded = new Uint8Array(blockSize);
-            padded.set(key);
-            key = padded;
-        }
-        
-        const innerKey = new Uint8Array(blockSize);
-        const outerKey = new Uint8Array(blockSize);
-        
-        for (let i = 0; i < blockSize; i++) {
-            innerKey[i] = key[i] ^ 0x36;
-            outerKey[i] = key[i] ^ 0x5c;
-        }
-        
-        const innerHash = sha1(concat(innerKey, message));
-        return sha1(concat(outerKey, innerHash));
-    }
-
-    function sha1(data) {
-        if (!(data instanceof Uint8Array)) {
-            data = new Uint8Array(data);
-        }
-        
-        let h0 = 0x67452301;
-        let h1 = 0xEFCDAB89;
-        let h2 = 0x98BADCFE;
-        let h3 = 0x10325476;
-        let h4 = 0xC3D2E1F0;
-        
-        const ml = data.length * 8;
-        const paddedLength = Math.ceil((ml + 65) / 512) * 512 / 8;
-        const padded = new Uint8Array(paddedLength);
-        padded.set(data);
-        padded[data.length] = 0x80;
-        
-        const view = new DataView(padded.buffer);
-        view.setUint32(paddedLength - 4, ml & 0xffffffff, false);
-        
-        for (let i = 0; i < paddedLength; i += 64) {
-            const w = new Uint32Array(80);
-            
-            for (let j = 0; j < 16; j++) {
-                w[j] = view.getUint32(i + j * 4, false);
-            }
-            
-            for (let j = 16; j < 80; j++) {
-                w[j] = leftRotate(w[j-3] ^ w[j-8] ^ w[j-14] ^ w[j-16], 1);
-            }
-            
-            let a = h0, b = h1, c = h2, d = h3, e = h4;
-            
-            for (let j = 0; j < 80; j++) {
-                let f, k;
-                if (j < 20) {
-                    f = (b & c) | ((~b) & d);
-                    k = 0x5A827999;
-                } else if (j < 40) {
-                    f = b ^ c ^ d;
-                    k = 0x6ED9EBA1;
-                } else if (j < 60) {
-                    f = (b & c) | (b & d) | (c & d);
-                    k = 0x8F1BBCDC;
-                } else {
-                    f = b ^ c ^ d;
-                    k = 0xCA62C1D6;
-                }
-                
-                const temp = (leftRotate(a, 5) + f + e + k + w[j]) & 0xffffffff;
-                e = d;
-                d = c;
-                c = leftRotate(b, 30);
-                b = a;
-                a = temp;
-            }
-            
-            h0 = (h0 + a) & 0xffffffff;
-            h1 = (h1 + b) & 0xffffffff;
-            h2 = (h2 + c) & 0xffffffff;
-            h3 = (h3 + d) & 0xffffffff;
-            h4 = (h4 + e) & 0xffffffff;
-        }
-        
-        const result = new Uint8Array(20);
-        const resultView = new DataView(result.buffer);
-        resultView.setUint32(0, h0, false);
-        resultView.setUint32(4, h1, false);
-        resultView.setUint32(8, h2, false);
-        resultView.setUint32(12, h3, false);
-        resultView.setUint32(16, h4, false);
-        
-        return result;
-    }
-
-    function leftRotate(n, s) {
-        return ((n << s) | (n >>> (32 - s))) & 0xffffffff;
-    }
-
-    function concat(a, b) {
-        const result = new Uint8Array(a.length + b.length);
-        result.set(a);
-        result.set(b, a.length);
-        return result;
+        return hex;
     }
 
     function generateTOTP(secret) {
-        try {
-            secret = secret.replace(/\s/g, '').toUpperCase();
-            const key = base32Decode(secret);
-            const epoch = Math.floor(Date.now() / 1000);
-            const timeStep = Math.floor(epoch / 30);
-            
-            const timeBytes = new Uint8Array(8);
-            const timeView = new DataView(timeBytes.buffer);
-            timeView.setUint32(4, timeStep, false);
-            
-            const hmac = hmacSha1Sync(key, timeBytes);
-            const offset = hmac[19] & 0x0f;
-            const truncated = (
-                ((hmac[offset] & 0x7f) << 24) |
-                ((hmac[offset + 1] & 0xff) << 16) |
-                ((hmac[offset + 2] & 0xff) << 8) |
-                (hmac[offset + 3] & 0xff)
-            );
-            
-            return (truncated % 1000000).toString().padStart(6, '0');
-        } catch (error) {
-            console.error('TOTP generation error:', error);
-            throw new Error('Invalid secret key');
-        }
+        const key = base32ToHex(secret);
+        const epoch = Math.round(new Date().getTime() / 1000.0);
+        const time = ('0000000000000000' + Math.floor(epoch / 30).toString(16)).slice(-16);
+        
+        const hmac = CryptoJS.HmacSHA1(CryptoJS.enc.Hex.parse(time), CryptoJS.enc.Hex.parse(key));
+        const hmacHex = hmac.toString(CryptoJS.enc.Hex);
+        
+        const offset = parseInt(hmacHex.substring(hmacHex.length - 1), 16);
+        let otp = (parseInt(hmacHex.substr(offset * 2, 8), 16) & parseInt('7fffffff', 16)) + '';
+        otp = (otp).substr(otp.length - 6, 6);
+        
+        return otp;
     }
 
     function generateAndSave() {
         const keyInput = document.getElementById('secret-key');
-        const key = keyInput.value.trim();
+        const key = keyInput.value.trim().replace(/\s/g, '').toUpperCase();
         
         if(!key) {
             alert('⚠️ Please enter a secret key!');
@@ -1018,13 +899,15 @@ color: rgba(156, 163, 175, 0.4);
 
         try {
             const code = generateTOTP(key);
+            
             document.getElementById('2fa-result').innerText = code;
             
             navigator.clipboard.writeText(code.toString());
 
-            addToHistory(key, code);
+            addToHistory(keyInput.value.trim(), code);
 
             keyInput.value = '';
+            
         } catch (error) {
             alert('❌ Invalid 2FA Secret Key! Please verify token parameters.');
             console.error('TOTP Error:', error);
@@ -1065,6 +948,8 @@ color: rgba(156, 163, 175, 0.4);
 "></iframe>
 </div>
 </div>
+
+    
 <div id="tool-uid" class="section">
 <div class="tool-wrapper">
 <iframe id="iframe-uid" class="responsive-iframe" srcdoc="
