@@ -615,12 +615,14 @@ color: rgba(156, 163, 175, 0.4);
         label { display: block; font-weight: 600; margin-bottom: 10px; color: rgb(226, 232, 240); font-size: 0.875rem; }
         input { width: 100%; padding: 14px; border: 2px solid rgb(30, 41, 59); border-radius: 14px; font-size: 0.95rem; color: white; background: rgb(15, 17, 26); font-family: Courier New, monospace; font-weight: 600; }
         input:focus { outline: none; border-color: rgb(168, 85, 247); box-shadow: 0 0 20px rgba(168, 85, 247, 0.3); }
-        button { width: 100%; padding: 14px; background: linear-gradient(135deg, rgb(168, 85, 247), rgb(59, 130, 246)); color: white; border: none; border-radius: 14px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-bottom: 16px; }
+        button { width: 100%; padding: 14px; background: linear-gradient(135deg, rgb(168, 85, 247), rgb(59, 130, 246)); color: white; border: none; border-radius: 14px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-bottom: 16px; transition: all 0.2s; }
         button:hover { transform: translateY(-2px); opacity: 0.95; }
         .code-box { background: linear-gradient(135deg, rgb(17, 24, 39) 0%, rgb(3, 7, 18) 100%); border: 2px solid rgb(30, 41, 59); border-radius: 14px; padding: 20px; text-align: center; margin-bottom: 12px; display: none; }
         .code-label { font-size: 0.8rem; color: rgb(168, 85, 247); font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
-        .code-value { font-size: 2rem; font-weight: 800; color: rgb(52, 211, 153); font-family: Courier New, monospace; letter-spacing: 4px; }
-        .copy-msg { text-align: center; color: rgb(52, 211, 153); font-weight: 700; font-size: 0.85rem; opacity: 0; transition: opacity 0.3s; }
+        .code-value { font-size: 2rem; font-weight: 800; color: rgb(52, 211, 153); font-family: Courier New, monospace; letter-spacing: 4px; margin-bottom: 12px; }
+        .copy-btn { padding: 10px 20px; background: rgba(168, 85, 247, 0.2); border: 1px solid rgb(168, 85, 247); border-radius: 10px; color: rgb(168, 85, 247); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .copy-btn:hover { background: rgba(168, 85, 247, 0.3); transform: scale(1.05); }
+        .copy-msg { text-align: center; color: rgb(52, 211, 153); font-weight: 700; font-size: 0.85rem; opacity: 0; transition: opacity 0.3s; margin-top: 8px; }
         .copy-msg.visible { opacity: 1; }
         .history-card { background: rgb(21, 23, 37); border-radius: 24px; padding: 24px 20px; border: 1px solid rgba(255, 255, 255, 0.05); max-height: 350px; }
         .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
@@ -652,8 +654,9 @@ color: rgba(156, 163, 175, 0.4);
             <div id='codeBox' class='code-box'>
                 <div class='code-label'>Your Code:</div>
                 <div id='codeValue' class='code-value'>------</div>
+                <button id='copyBtn' class='copy-btn'>📋 Copy Code</button>
+                <p id='copyMsg' class='copy-msg'>✓ Copied!</p>
             </div>
-            <p id='copyMsg' class='copy-msg'>✓ Code copied to clipboard!</p>
         </div>
         <div class='history-card'>
             <div class='history-header'>
@@ -668,6 +671,7 @@ color: rgba(156, 163, 175, 0.4);
     <script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js'></script>
     <script>
         var historyData = [];
+        var currentCode = '';
         
         function base32ToHex(base32) {
             var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -703,12 +707,7 @@ color: rgba(156, 163, 175, 0.4);
         function doGenerate() {
             var inputEl = document.getElementById('keyInput');
             var secret = inputEl.value.trim().toUpperCase().replace(/\s/g, '');
-            
-            if (!secret) { 
-                alert('⚠️ Enter key!'); 
-                return; 
-            }
-            
+            if (!secret) { alert('⚠️ Enter key!'); return; }
             var code;
             try { 
                 code = makeTOTP(secret);
@@ -718,75 +717,55 @@ color: rgba(156, 163, 175, 0.4);
                 alert('❌ Invalid Key'); 
                 return; 
             }
-            
-            var codeEl = document.getElementById('codeValue');
-            var boxEl = document.getElementById('codeBox');
-            
-            codeEl.textContent = code;
-            boxEl.style.display = 'block';
-            
-            try {
-                navigator.clipboard.writeText(code).then(function() {
-                    showCopyMsg();
-                }).catch(function(err) {
-                    console.error('Copy error:', err);
-                });
-            } catch (e) {
-                console.error('Clipboard error:', e);
-            }
-            
+            currentCode = code;
+            document.getElementById('codeValue').textContent = code;
+            document.getElementById('codeBox').style.display = 'block';
             saveToHistory(secret, code);
-            
             inputEl.value = '';
             inputEl.blur();
+        }
+        
+        function copyCode() {
+            if (!currentCode) return;
+            var tempInput = document.createElement('input');
+            tempInput.value = currentCode;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999);
+            try {
+                document.execCommand('copy');
+                showCopyMsg();
+            } catch (e) {
+                console.error('Copy failed:', e);
+            }
+            document.body.removeChild(tempInput);
         }
         
         function showCopyMsg() {
             var msg = document.getElementById('copyMsg');
             if (msg) {
                 msg.className = 'copy-msg visible';
-                setTimeout(function() { 
-                    msg.className = 'copy-msg'; 
-                }, 2000);
+                setTimeout(function() { msg.className = 'copy-msg'; }, 2000);
             }
         }
         
         function saveToHistory(key, code) {
             var now = new Date();
-            var timeStr = now.toLocaleString('en-US', { 
-                month: 'short', 
-                day: 'numeric', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                hour12: true 
-            });
-            
-            historyData.unshift({ 
-                key: key, 
-                code: code, 
-                time: timeStr 
-            });
-            
-            if (historyData.length > 20) {
-                historyData = historyData.slice(0, 20);
-            }
-            
+            var timeStr = now.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+            historyData.unshift({ key: key, code: code, time: timeStr });
+            if (historyData.length > 20) historyData = historyData.slice(0, 20);
             updateHistory();
         }
         
         function updateHistory() {
             var content = document.getElementById('historyContent');
             var badge = document.getElementById('historyBadge');
-            
             if (!content || !badge) return;
-            
             badge.textContent = historyData.length + ' saved';
-            
             if (historyData.length === 0) {
                 content.innerHTML = '<p class=empty-msg>No codes generated yet</p>';
                 return;
             }
-            
             var html = '';
             for (var i = 0; i < historyData.length; i++) {
                 var item = historyData[i];
@@ -797,23 +776,18 @@ color: rgba(156, 163, 175, 0.4);
                 html += '<div class=history-time>' + item.time + '</div>';
                 html += '</div></div>';
             }
-            
             content.innerHTML = html;
         }
         
         window.onload = function() {
             var btn = document.getElementById('generateBtn');
+            var copyBtn = document.getElementById('copyBtn');
             var input = document.getElementById('keyInput');
-            
-            if (btn) {
-                btn.onclick = doGenerate;
-            }
-            
+            if (btn) btn.onclick = doGenerate;
+            if (copyBtn) copyBtn.onclick = copyCode;
             if (input) {
                 input.onkeypress = function(e) {
-                    if (e.key === 'Enter') {
-                        doGenerate();
-                    }
+                    if (e.key === 'Enter') doGenerate();
                 };
             }
         };
@@ -823,6 +797,8 @@ color: rgba(156, 163, 175, 0.4);
 "></iframe>
 </div>
 </div>
+
+
     
 <div id="tool-uid" class="section">
 <div class="tool-wrapper">
