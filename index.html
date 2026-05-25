@@ -624,28 +624,28 @@ color: rgba(156, 163, 175, 0.4);
         .input-group { margin-bottom: 20px; }
         label { display: block; font-weight: 600; margin-bottom: 10px; color: 
 ; font-size: 0.875rem; }
-        input[type='text'] { width: 100%; padding: 14px; border: 2px solid rgb(30, 41, 59); border-radius: 14px; font-size: 0.95rem; color: #fff; background: var(--input-bg); font-family: 'Courier New', monospace; font-weight: 600; }
-        input[type='text']:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
+        input[type=text] { width: 100%; padding: 14px; border: 2px solid rgb(30, 41, 59); border-radius: 14px; font-size: 0.95rem; color: #fff; background: var(--input-bg); font-family: Courier New, monospace; font-weight: 600; }
+        input[type=text]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
         button { width: 100%; padding: 14px; background: var(--btn-grad); color: #fff; border: none; border-radius: 14px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(168, 85, 247, 0.3); }
         button:hover { transform: translateY(-2px); opacity: 0.95; }
         .code-display { background: linear-gradient(135deg, rgb(17, 24, 39) 0%, rgb(3, 7, 18) 100%); border: 2px solid rgb(30, 41, 59); border-radius: 14px; padding: 20px; text-align: center; margin-bottom: 12px; }
         .code-label { font-size: 0.8rem; color: var(--primary); font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
-        .totp-code { font-size: clamp(1.5rem, 5vw, 2rem); font-weight: 800; color: rgb(52, 211, 153); font-family: 'Courier New', monospace; letter-spacing: 4px; }
+        .totp-code { font-size: clamp(1.5rem, 5vw, 2rem); font-weight: 800; color: rgb(52, 211, 153); font-family: Courier New, monospace; letter-spacing: 4px; }
         .copy-hint { text-align: center; color: rgb(52, 211, 153); font-weight: 700; font-size: 0.85rem; opacity: 0; transition: opacity 0.3s; }
         .copy-hint.show { opacity: 1; }
         .history-card { background: var(--card-bg); border-radius: 24px; padding: 24px 20px; border: 1px solid var(--border); max-height: 350px; display: flex; flex-direction: column; width: 100%; }
         .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
         .history-header h2 { font-size: 1.05rem; color: 
 ; font-weight: 800; }
-        #historyCount { font-size: 0.7rem; color: rgb(192, 132, 252); background: rgba(168, 85, 247, 0.15); padding: 4px 10px; border-radius: 20px; }
+        .history-count { font-size: 0.7rem; color: rgb(192, 132, 252); background: rgba(168, 85, 247, 0.15); padding: 4px 10px; border-radius: 20px; }
         .history-list { overflow-y: auto; padding-right: 4px; }
         .history-list::-webkit-scrollbar { width: 6px; }
         .history-list::-webkit-scrollbar-thumb { background: rgb(30, 41, 59); border-radius: 10px; }
         .empty-state { text-align: center; color: var(--text-gray); padding: 30px 10px; font-style: italic; font-size: 0.85rem; }
         .history-item { padding: 12px; background: rgb(17, 23, 38); border-radius: 14px; margin-bottom: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; border: 1px solid rgba(255, 255, 255, 0.02); }
-        .history-code { font-size: 1.15rem; font-weight: 700; color: rgb(56, 189, 248); font-family: 'Courier New', monospace; }
+        .history-code { font-size: 1.15rem; font-weight: 700; color: rgb(56, 189, 248); font-family: Courier New, monospace; }
         .history-details { text-align: right; }
-        .history-key { font-size: 0.7rem; color: var(--text-gray); word-break: break-all; font-family: 'Courier New', monospace; }
+        .history-key { font-size: 0.7rem; color: var(--text-gray); word-break: break-all; font-family: Courier New, monospace; }
         .history-time { font-size: 0.65rem; color: rgb(100, 116, 139); font-weight: 600; }
     </style>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js'></script>
@@ -661,7 +661,7 @@ color: rgba(156, 163, 175, 0.4);
                 <label>Enter your 2FA Secret Key:</label>
                 <input type='text' id='secretKey' placeholder='JBSWY3DPEHPK3PXP' autocomplete='off'>
             </div>
-            <button onclick='generateCode()'>🔑 Generate Code</button>
+            <button id='genBtn'>🔑 Generate Code</button>
             <div id='codeDisplay' class='code-display' style='display: none;'>
                 <div class='code-label'>Your Code:</div>
                 <div id='totpCode' class='totp-code'>------</div>
@@ -671,7 +671,7 @@ color: rgba(156, 163, 175, 0.4);
         <div class='history-card'>
             <div class='history-header'>
                 <h2>📋 Recent Codes</h2>
-                <span id='historyCount'>0 saved</span>
+                <span class='history-count' id='historyCount'>0 saved</span>
             </div>
             <div id='historyList' class='history-list'>
                 <p class='empty-state'>No codes generated yet</p>
@@ -679,18 +679,18 @@ color: rgba(156, 163, 175, 0.4);
         </div>
     </div>
     <script>
+        let history = [];
+        
         function base32ToHex(base32) {
             const base32chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
             let bits = '';
             let hex = '';
             base32 = base32.replace(/=+$/g, '').replace(/\s/g, '');
-            
             for (let i = 0; i < base32.length; i++) {
                 const val = base32chars.indexOf(base32.charAt(i).toUpperCase());
                 if (val === -1) throw new Error('Invalid base32');
                 bits += ('00000' + val.toString(2)).slice(-5);
             }
-            
             for (let i = 0; i + 4 <= bits.length; i += 4) {
                 const chunk = bits.substr(i, 4);
                 hex = hex + parseInt(chunk, 2).toString(16);
@@ -710,82 +710,64 @@ color: rgba(156, 163, 175, 0.4);
             return otp;
         }
         
-        let history = [];
-        
         function generateCode() {
             const input = document.getElementById('secretKey');
             const secret = input.value.trim().toUpperCase().replace(/\s/g, '');
-            
-            if (!secret) { 
-                alert('⚠️ Enter key!'); 
-                return; 
-            }
-            
+            if (!secret) { alert('⚠️ Enter key!'); return; }
             let code;
-            try {
-                code = generateTOTP(secret);
-            } catch (e) { 
-                console.error('TOTP Error:', e);
-                alert('❌ Invalid Key');
-                return;
-            }
-            
+            try { code = generateTOTP(secret); } 
+            catch (e) { console.error('TOTP Error:', e); alert('❌ Invalid Key'); return; }
             document.getElementById('totpCode').textContent = code;
             document.getElementById('codeDisplay').style.display = 'block';
-            
-            navigator.clipboard.writeText(code).then(() => {
-                showHint();
-            }).catch(err => {
-                console.error('Copy failed:', err);
-            });
-            
+            navigator.clipboard.writeText(code).then(() => { showHint(); }).catch(err => { console.error('Copy failed:', err); });
             addHist(secret, code);
             input.value = '';
         }
         
         function showHint() { 
             const h = document.getElementById('copyHint'); 
-            h.classList.add('show'); 
-            setTimeout(() => h.classList.remove('show'), 2000); 
+            if (h) {
+                h.classList.add('show'); 
+                setTimeout(() => h.classList.remove('show'), 2000); 
+            }
         }
         
         function addHist(sec, cod) {
-            const time = new Date().toLocaleString('en-US', { 
-                month: 'short', 
-                day: 'numeric', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                hour12: true 
-            });
-            
-            history.unshift({ sec, cod, time });
+            const time = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+            history.unshift({ sec: sec, cod: cod, time: time });
             if (history.length > 20) history = history.slice(0, 20);
             renderHist();
         }
         
         function renderHist() {
             const list = document.getElementById('historyList');
-            document.getElementById('historyCount').textContent = history.length + ' saved';
-            
-            if(history.length === 0) {
-                list.innerHTML = '<p class=' + String.fromCharCode(34) + 'empty-state' + String.fromCharCode(34) + '>No codes generated yet</p>';
+            const count = document.getElementById('historyCount');
+            if (!list || !count) return;
+            count.textContent = history.length + ' saved';
+            if (history.length === 0) {
+                list.innerHTML = '<p class=empty-state>No codes generated yet</p>';
                 return;
             }
-            
             let html = '';
-            for(let i = 0; i < history.length; i++) {
-                html += '<div class=' + String.fromCharCode(34) + 'history-item' + String.fromCharCode(34) + '>';
-                html += '<div class=' + String.fromCharCode(34) + 'history-code' + String.fromCharCode(34) + '>' + history[i].cod + '</div>';
-                html += '<div class=' + String.fromCharCode(34) + 'history-details' + String.fromCharCode(34) + '>';
-                html += '<div class=' + String.fromCharCode(34) + 'history-key' + String.fromCharCode(34) + '>Key: ' + history[i].sec + '</div>';
-                html += '<div class=' + String.fromCharCode(34) + 'history-time' + String.fromCharCode(34) + '>' + history[i].time + '</div>';
+            for (let i = 0; i < history.length; i++) {
+                const item = history[i];
+                html += '<div class=history-item>';
+                html += '<div class=history-code>' + item.cod + '</div>';
+                html += '<div class=history-details>';
+                html += '<div class=history-key>Key: ' + item.sec + '</div>';
+                html += '<div class=history-time>' + item.time + '</div>';
                 html += '</div></div>';
             }
             list.innerHTML = html;
         }
         
-        document.getElementById('secretKey').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') generateCode();
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('genBtn');
+            const input = document.getElementById('secretKey');
+            if (btn) btn.addEventListener('click', generateCode);
+            if (input) input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') generateCode();
+            });
         });
     </script>
 </body>
