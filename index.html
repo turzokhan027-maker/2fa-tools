@@ -721,17 +721,26 @@ color: rgba(156, 163, 175, 0.4);
                 return; 
             }
             
+            let code;
             try {
-                const code = generateTOTP(secret);
-                document.getElementById('totpCode').textContent = code;
-                document.getElementById('codeDisplay').style.display = 'block';
-                navigator.clipboard.writeText(code);
-                showHint(); 
-                addHist(secret, code); 
-                input.value = '';
+                code = generateTOTP(secret);
             } catch (e) { 
-                alert('❌ Invalid Key'); 
+                console.error('TOTP Error:', e);
+                alert('❌ Invalid Key');
+                return;
             }
+            
+            document.getElementById('totpCode').textContent = code;
+            document.getElementById('codeDisplay').style.display = 'block';
+            
+            navigator.clipboard.writeText(code).then(() => {
+                showHint();
+            }).catch(err => {
+                console.error('Copy failed:', err);
+            });
+            
+            addHist(secret, code);
+            input.value = '';
         }
         
         function showHint() { 
@@ -741,7 +750,14 @@ color: rgba(156, 163, 175, 0.4);
         }
         
         function addHist(sec, cod) {
-            const time = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+            const time = new Date().toLocaleString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: true 
+            });
+            
             history.unshift({ sec, cod, time });
             if (history.length > 20) history = history.slice(0, 20);
             renderHist();
