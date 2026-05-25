@@ -627,7 +627,8 @@ color: rgba(156, 163, 175, 0.4);
         .code-display { font-size: 42px; font-weight: 800; color: #000; letter-spacing: 5px; }
         .copy-icon { font-size: 24px; color: var(--primary); cursor: pointer; transition: transform 0.2s; }
         .copy-icon:hover { transform: scale(1.2); }
-        .auto-copy-label { margin: 12px 0 30px 0; color: var(--text-gray); font-weight: 600; font-size: 13px; }
+        .auto-copy-label { margin: 12px 0 30px 0; color: 
+; font-weight: 700; font-size: 14px; }
         .history-section { text-align: left; border-top: 2px dashed 
 ; padding-top: 20px; }
         .history-section h3 { font-size: 18px; font-weight: 800; color: 
@@ -640,6 +641,8 @@ color: rgba(156, 163, 175, 0.4);
 ; box-shadow: 0 2px 5px rgba(0,0,0,0.02); animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .history-item b { color: #000; }
+        .empty-history { text-align: center; color: 
+; padding: 40px 20px; font-style: italic; }
         @media (max-width: 600px) { .tool-card { padding: 30px 20px; border-radius: 30px; } .code-display { font-size: 32px; letter-spacing: 3px; } .code-box-wrapper { padding: 12px 30px; } }
     </style>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'>
@@ -655,32 +658,39 @@ color: rgba(156, 163, 175, 0.4);
                 <span id='2fa-result' class='code-display'>------</span>
                 <i class='fa-solid fa-copy copy-icon' onclick='copyManual()'></i>
             </div>
-            <p class='auto-copy-label'>Auto code generated &amp; copied!</p>
+            <p class='auto-copy-label' id='copy-status' style='opacity: 0;'>✓ Code copied to clipboard!</p>
         </center>
         <div class='history-section'>
             <h3>📋 History</h3>
-            <div id='history-container' class='history-list'></div>
+            <div id='history-container' class='history-list'>
+                <div class='empty-history'>No codes generated yet</div>
+            </div>
         </div>
     </main>
 </div>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js'></script>
 <script>
     const MAX_HISTORY = 20;
+    
     function base32ToHex(base32) {
         const base32chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-        let bits = '', hex = '';
-        base32 = base32.replace(/=+$/, '').replace(/\s/g, '');
+        let bits = '';
+        let hex = '';
+        base32 = base32.replace(/=+$/g, '').replace(/\s/g, '');
+        
         for (let i = 0; i < base32.length; i++) {
             const val = base32chars.indexOf(base32.charAt(i).toUpperCase());
-            if (val === -1) throw new Error('Invalid base32 character in key');
+            if (val === -1) throw new Error('Invalid base32 character');
             bits += ('00000' + val.toString(2)).slice(-5);
         }
+        
         for (let i = 0; i + 4 <= bits.length; i += 4) {
             const chunk = bits.substr(i, 4);
             hex = hex + parseInt(chunk, 2).toString(16);
         }
         return hex;
     }
+    
     function generateTOTP(secret) {
         const key = base32ToHex(secret);
         const epoch = Math.round(new Date().getTime() / 1000.0);
@@ -692,39 +702,83 @@ color: rgba(156, 163, 175, 0.4);
         otp = (otp).substr(otp.length - 6, 6);
         return otp;
     }
+    
     function generateAndSave() {
         const keyInput = document.getElementById('secret-key');
         const originalKey = keyInput.value.trim();
         const key = originalKey.replace(/\s/g, '').toUpperCase();
-        if(!key) { alert('⚠️ Please enter a secret key!'); return; }
+        
+        if(!key) { 
+            alert('⚠️ Please enter a secret key!'); 
+            return; 
+        }
+        
         try {
             const code = generateTOTP(key);
             document.getElementById('2fa-result').innerText = code;
-            navigator.clipboard.writeText(code.toString());
+            
+            // Auto-copy
+            navigator.clipboard.writeText(code).then(() => {
+                showCopyStatus();
+            }).catch(() => {
+                console.log('Copy failed');
+            });
+            
+            // Add to history
             addToHistory(originalKey, code);
+            
+            // Clear input
             keyInput.value = '';
+            
         } catch (error) {
-            alert('❌ Invalid 2FA Secret Key! Please verify token parameters.');
             console.error('TOTP Error:', error);
+            alert('❌ Invalid 2FA Secret Key!');
         }
     }
+    
+    function showCopyStatus() {
+        const status = document.getElementById('copy-status');
+        status.style.opacity = '1';
+        setTimeout(() => {
+            status.style.opacity = '0';
+        }, 2000);
+    }
+    
     function addToHistory(key, code) {
         const container = document.getElementById('history-container');
+        
+        // Remove empty state
+        const emptyState = container.querySelector('.empty-history');
+        if(emptyState) {
+            emptyState.remove();
+        }
+        
         const item = document.createElement('div');
         item.className = 'history-item';
         item.innerHTML = '<b>CODE: ' + code + '</b> | <span style=&quot;opacity:0.7&quot;>KEY: ' + key + '</span>';
+        
         container.insertBefore(item, container.firstChild);
+        
+        // Limit history
         const currentItems = container.getElementsByClassName('history-item');
-        while (currentItems.length > MAX_HISTORY) { container.removeChild(container.lastChild); }
+        while (currentItems.length > MAX_HISTORY) { 
+            container.removeChild(container.lastChild); 
+        }
     }
+    
     function copyManual() {
         const code = document.getElementById('2fa-result').innerText;
         if(code === '------') return;
-        navigator.clipboard.writeText(code);
-        alert('✓ Code copied: ' + code);
+        
+        navigator.clipboard.writeText(code).then(() => {
+            alert('✓ Code copied: ' + code);
+        });
     }
+    
     document.getElementById('secret-key').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') { generateAndSave(); }
+        if (e.key === 'Enter') { 
+            generateAndSave(); 
+        }
     });
 </script>
 </body>
@@ -732,7 +786,6 @@ color: rgba(156, 163, 175, 0.4);
 "></iframe>
 </div>
 </div>
-
 <div id="tool-uid" class="section">
 <div class="tool-wrapper">
 <iframe id="iframe-uid" class="responsive-iframe" srcdoc="
