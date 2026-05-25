@@ -586,19 +586,26 @@ color: rgba(156, 163, 175, 0.4);
 </div>
 
 <div id="tool-2fa" class="section">
-    <script>
-    // ১. TOTP কোর ইঞ্জিন
+<script>
+    // ১. উন্নত TOTP ইঞ্জিন
     const BASE32_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    function base32Decode(base32) {
-        base32 = base32.toUpperCase().replace(/\s+/g, '').replace(/=+$/, '');
+
+    function base32Decode(input) {
+        // এই লাইনটিই মূল সমাধান: এটি স্পেস, ড্যাশ বা যেকোনো অদরকারি চিহ্ন মুছে ফেলবে
+        const cleanInput = input.toUpperCase().replace(/[^A-Z2-7]/g, '');
+        
+        if (cleanInput.length === 0) throw new Error('Invalid input');
+
         let bits = '';
-        for (let i = 0; i < base32.length; i++) {
-            const val = BASE32_CHARS.indexOf(base32[i]);
-            if (val === -1) throw new Error('Invalid character');
+        for (let i = 0; i < cleanInput.length; i++) {
+            const val = BASE32_CHARS.indexOf(cleanInput[i]);
             bits += val.toString(2).padStart(5, '0');
         }
+        
         const bytes = [];
-        for (let i = 0; i + 8 <= bits.length; i += 8) bytes.push(parseInt(bits.substr(i, 8), 2));
+        for (let i = 0; i + 8 <= bits.length; i += 8) {
+            bytes.push(parseInt(bits.substr(i, 8), 2));
+        }
         return new Uint8Array(bytes);
     }
 
@@ -618,7 +625,7 @@ color: rgba(156, 163, 175, 0.4);
                 else if (j < 40) { f = b ^ c ^ d; k = 0x6ED9EBA1; }
                 else if (j < 60) { f = (b & c) | (b & d) | (c & d); k = 0x8F1BBCDC; }
                 else { f = b ^ c ^ d; k = 0xCA62C1D6; }
-                const temp = ((((a << 5) | (a >>> 27)) + f + e + k + w[j]) & 0xffffffff);
+                const temp = (((a << 5) | (a >>> 27)) + f + e + k + w[j]) & 0xffffffff;
                 e = d; d = c; c = ((b << 30) | (b >>> 2)) & 0xffffffff; b = a; a = temp;
             }
             h0 = (h0 + a) & 0xffffffff; h1 = (h1 + b) & 0xffffffff; h2 = (h2 + c) & 0xffffffff; h3 = (h3 + d) & 0xffffffff; h4 = (h4 + e) & 0xffffffff;
@@ -635,7 +642,6 @@ color: rgba(156, 163, 175, 0.4);
         return sha1(new Uint8Array([...ok, ...sha1(new Uint8Array([...ik, ...msg]))]));
     }
 
-    // ২. জেনারেটর ফাংশন
     function generateTOTP(secret) {
         const key = base32Decode(secret);
         const ts = Math.floor(Date.now() / 30000);
@@ -645,7 +651,6 @@ color: rgba(156, 163, 175, 0.4);
         return (trunc % 1000000).toString().padStart(6, '0');
     }
 
-    // ৩. UI কন্ট্রোল এবং হিস্টোরি
     document.getElementById('actionBtn').addEventListener('click', function() {
         const keyInput = document.getElementById('secretKey');
         const secret = keyInput.value.trim();
@@ -656,18 +661,15 @@ color: rgba(156, 163, 175, 0.4);
             document.getElementById('totpCode').textContent = code;
             document.getElementById('codeDisplay').style.display = 'block';
             
-            // ক্লিপবোর্ডে কপি
             navigator.clipboard.writeText(code);
             
-            // হিস্টোরি আপডেট
             const historyList = document.getElementById('historyList');
             historyList.querySelector('.empty-msg')?.remove();
-            
             const entry = document.createElement('div');
-            entry.style.cssText = "padding: 8px 0; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between;";
-            entry.innerHTML = `<span>Code: <b>${code}</b></span> <span style="color:#64748b; font-size:10px;">${new Date().toLocaleTimeString()}</span>`;
+            entry.style.cssText = "padding: 8px 0; border-bottom: 1px solid #1e293b;";
+            entry.innerHTML = `Code: <b>${code}</b> | Key: ${secret.substring(0,6)}...`;
             historyList.prepend(entry);
-        } catch(e) { alert('Invalid Key! Please check format.'); }
+        } catch(e) { alert('Invalid Secret Key format!'); }
     });
 </script>
 
