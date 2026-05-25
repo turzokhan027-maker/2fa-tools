@@ -601,7 +601,7 @@ color: rgba(156, 163, 175, 0.4);
             <div class="history-section" style="margin-top: 30px; border-top: 1px solid #1e293b; padding-top: 20px;">
                 <h3 style="margin-bottom: 10px;">Recent History</h3>
                 <div id="historyList" style="max-height: 200px; overflow-y: auto; font-size: 13px; color: #94a3b8;">
-                    <p>No history yet.</p>
+                    <p class="empty-msg">No history yet.</p>
                 </div>
             </div>
         </div>
@@ -609,7 +609,7 @@ color: rgba(156, 163, 175, 0.4);
 </div>
 
 <script>
-    // TOTP লজিক
+    // ১. TOTP লজিক ফাংশনসমূহ
     const BASE32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
     function base32Decode(b32) {
         b32 = b32.toUpperCase().replace(/=+$/, '');
@@ -624,40 +624,84 @@ color: rgba(156, 163, 175, 0.4);
         return new Uint8Array(bytes);
     }
 
-    // সংক্ষেপে TOTP জেনারেটর (আপনার আগের SHA1 লজিক এখানে কল করুন)
-    function generateTOTP(secret) {
-        // এখানে আপনার আগের জটিল লজিকটি বসানো আছে ধরে নিচ্ছি
-        return Math.floor(100000 + Math.random() * 900000).toString(); // ডামি কোড
+    function sha1(data) {
+        if (!(data instanceof Uint8Array)) data = new Uint8Array(data);
+        let h0 = 0x67452301, h1 = 0xEFCDAB89, h2 = 0x98BADCFE, h3 = 0x10325476, h4 = 0xC3D2E1F0;
+        const ml = data.length * 8, pl = Math.ceil((ml + 65) / 512) * 512 / 8, p = new Uint8Array(pl);
+        p.set(data); p[data.length] = 0x80;
+        const view = new DataView(p.buffer); view.setUint32(pl - 4, ml & 0xffffffff, false);
+        for (let i = 0; i < pl; i += 64) {
+            const w = new Uint32Array(80);
+            for (let j = 0; j < 16; j++) w[j] = view.getUint32(i + j * 4, false);
+            for (let j = 16; j < 80; j++) w[j] = ((w[j-3] ^ w[j-8] ^ w[j-14] ^ w[j-16]) << 1 | (w[j-3] ^ w[j-8] ^ w[j-14] ^ w[j-16]) >>> 31) & 0xffffffff;
+            let a = h0, b = h1, c = h2, d = h3, e = h4;
+            for (let j = 0; j < 80; j++) {
+                let f, k;
+                if (j < 20) { f = (b & c) | ((~b) & d); k = 0x5A827999; }
+                else if (j < 40) { f = b ^ c ^ d; k = 0x6ED9EBA1; }
+                else if (j < 60) { f = (b & c) | (b & d) | (c & d); k = 0x8F1BBCDC; }
+                else { f = b ^ c ^ d; k = 0xCA62C1D6; }
+                const temp = (((a << 5) | (a >>> 27)) + f + e + k + w[j]) & 0xffffffff;
+                e = d; d = c; c = ((b << 30) | (b >>> 2)) & 0xffffffff; b = a; a = temp;
+            }
+            h0 = (h0 + a) & 0xffffffff; h1 = (h1 + b) & 0xffffffff; h2 = (h2 + c) & 0xffffffff; h3 = (h3 + d) & 0xffffffff; h4 = (h4 + e) & 0xffffffff;
+        }
+        const res = new Uint8Array(20), resView = new DataView(res.buffer);
+        resView.setUint32(0, h0, false); resView.setUint32(4, h1, false); resView.setUint32(8, h2, false); resView.setUint32(12, h3, false); resView.setUint32(16, h4, false);
+        return res;
     }
 
-    // মেইন ফাংশন
+    function hmacSha1Sync(key, msg) {
+        const bs = 64;
+        if (key.length > bs) key = sha1(key);
+        if (key.length < bs) { const p = new Uint8Array(bs); p.set(key); key = p; }
+        const ik = new Uint8Array(bs), ok = new Uint8Array(bs);
+        for (let i = 0; i < bs; i++) { ik[i] = key[i] ^ 0x36; ok[i] = key[i] ^ 0x5c; }
+        return sha1(new Uint8Array([...ok, ...sha1(new Uint8Array([...ik, ...msg]))]));
+    }
+
+    function generateTOTP(secret) {
+        secret = secret.replace(/\s/g, '').toUpperCase();
+        const key = base32Decode(secret), epoch = Math.floor(Date.now() / 1000), ts = Math.floor(epoch / 30);
+        const tb = new Uint8Array(8), tv = new DataView(tb.buffer); tv.setUint32(4, ts, false);
+        const hmac = hmacSha1Sync(key, tb), offset = hmac[19] & 0x0f;
+        const truncated = (((hmac[offset] & 0x7f) << 24) | ((hmac[offset + 1] & 0xff) << 16) | ((hmac[offset + 2] & 0xff) << 8) | (hmac[offset + 3] & 0xff));
+        return (truncated % 1000000).toString().padStart(6, '0');
+    }
+
+    // ২. বাটন ক্লিক ও অটোমেশন
     document.getElementById('actionBtn').addEventListener('click', function() {
         const keyInput = document.getElementById('secretKey');
         const secret = keyInput.value.trim();
         
-        if(!secret) { alert('Enter key!'); return; }
+        if(!secret) { alert('Please enter your Secret Key!'); return; }
 
-        const code = generateTOTP(secret);
-        
-        // ১. ডিসপ্লে আপডেট
-        document.getElementById('totpCode').textContent = code;
-        document.getElementById('codeDisplay').style.display = 'block';
+        try {
+            const code = generateTOTP(secret);
+            
+            // ডিসপ্লে আপডেট
+            document.getElementById('totpCode').textContent = code;
+            document.getElementById('codeDisplay').style.display = 'block';
 
-        // ২. অটো কপি
-        navigator.clipboard.writeText(code);
+            // অটো কপি
+            navigator.clipboard.writeText(code);
 
-        // ৩. হিস্টোরি আপডেট
-        const historyList = document.getElementById('historyList');
-        if(historyList.innerHTML.includes('No history')) historyList.innerHTML = '';
-        
-        const entry = document.createElement('div');
-        entry.style.padding = "8px 0";
-        entry.style.borderBottom = "1px solid #1e293b";
-        entry.innerHTML = `<b>Code: ${code}</b> | Key: ${secret.substring(0,8)}...`;
-        historyList.prepend(entry);
+            // হিস্টোরি আপডেট
+            const historyList = document.getElementById('historyList');
+            const emptyMsg = historyList.querySelector('.empty-msg');
+            if(emptyMsg) emptyMsg.style.display = 'none';
+            
+            const entry = document.createElement('div');
+            entry.style.padding = "8px 0";
+            entry.style.borderBottom = "1px solid #1e293b";
+            entry.innerHTML = `<span style="color:#fff">Code: <b>${code}</b></span> | <span style="color:#94a3b8">Key: ${secret.substring(0,8)}...</span>`;
+            historyList.prepend(entry);
 
-        // ৪. ইনপুট ক্লিয়ার
-        keyInput.value = '';
+            // ইনপুট ক্লিয়ার
+            keyInput.value = '';
+        } catch(e) {
+            alert('Invalid Secret Key. Please check the format.');
+        }
     });
 </script>
 
