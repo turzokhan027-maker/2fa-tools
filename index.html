@@ -3,54 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Longisir VIP Portal - Free Tools</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Longisir VIP Portal</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
         :root { --primary: rgb(168, 85, 247); --bg: rgb(10, 11, 18); --card-bg: rgb(21, 23, 37); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background: var(--bg); color: white; min-height: 100vh; }
-        .section { display: none; width: 100%; padding: 40px; }
+        .section { display: none; padding: 40px; }
         .active { display: block; }
-        .card { background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid #334155; max-width: 600px; margin: 0 auto; }
+        .card { background: var(--card-bg); border: 1px solid #334155; padding: 25px; border-radius: 20px; max-width: 600px; margin: auto; }
+        nav { padding: 20px; display: flex; justify-content: center; gap: 20px; border-bottom: 1px solid #1e293b; }
+        button { cursor: pointer; background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<nav class="p-6 flex justify-center gap-6 border-b border-gray-800">
-    <a onclick="showSection('home')" class="cursor-pointer font-bold text-gray-400">Home</a>
-    <a onclick="showSection('tool-2fa')" class="cursor-pointer font-bold text-gray-400">2FA</a>
-    <a onclick="showSection('tool-mail')" class="cursor-pointer font-bold text-gray-400">Mail</a>
-    <a onclick="showSection('tool-uid')" class="cursor-pointer font-bold text-gray-400">UID</a>
+<nav>
+    <a onclick="showSection('home')" style="color:var(--primary); cursor:pointer;">Home</a>
+    <a onclick="showSection('tool-2fa')" style="cursor:pointer;">2FA</a>
+    <a onclick="showSection('tool-mail')" style="cursor:pointer;">Mail</a>
+    <a onclick="showSection('tool-uid')" style="cursor:pointer;">UID</a>
 </nav>
 
 <div id="home" class="section active text-center">
-    <h1 class="text-4xl font-black">Longisir VIP Portal</h1>
-    <p class="text-gray-500 mt-4">Integrated Web Automation Engine.</p>
+    <h1>Longisir VIP Portal</h1>
+    <p>Integrated Web Automation Engine.</p>
 </div>
 
 <div id="tool-2fa" class="section">
     <div class="card">
-        <h2 class="text-xl font-bold mb-4">2FA Authenticator</h2>
-        <input id="secret-key" class="w-full p-3 bg-gray-900 rounded mb-4" placeholder="Enter Secret Key">
-        <button onclick="generate2FA()" class="w-full bg-purple-600 p-3 rounded font-bold">Generate Code</button>
-        <div id="2fa-result" class="mt-4 text-center text-3xl font-mono text-green-400">XXXXXX</div>
+        <h2>2FA Authenticator</h2>
+        <input id="secret-key" style="width:100%; padding:10px; margin:10px 0; background:#000; color:#fff;" placeholder="Enter Key">
+        <button onclick="generate2FA()">Generate Code</button>
+        <div id="2fa-result" style="margin-top:15px; font-size:24px; color:#4ade80;">XXXXXX</div>
     </div>
 </div>
 
 <div id="tool-mail" class="section">
     <div class="card">
-        <h2 class="text-xl font-bold mb-4">Mail Extractor</h2>
-        <textarea id="mail-input" class="w-full h-32 bg-gray-900 p-3 rounded"></textarea>
-        <button onclick="alert('Mail tool is active!')" class="w-full bg-indigo-600 p-3 mt-4 rounded font-bold">Extract</button>
+        <h2>Mail Extractor</h2>
+        <textarea id="mail-input" style="width:100%; height:100px; margin:10px 0; background:#000; color:#fff;"></textarea>
+        <button onclick="alert('Mail Tool Active')">Extract</button>
     </div>
 </div>
 
 <div id="tool-uid" class="section">
     <div class="card">
-        <h2 class="text-xl font-bold mb-4">UID Checker</h2>
-        <textarea id="uid-input" class="w-full h-32 bg-gray-900 p-3 rounded"></textarea>
-        <button onclick="alert('UID tool is active!')" class="w-full bg-red-600 p-3 mt-4 rounded font-bold">Check Status</button>
+        <h2>UID Checker</h2>
+        <textarea id="uid-input" style="width:100%; height:100px; margin:10px 0; background:#000; color:#fff;"></textarea>
+        <button onclick="alert('UID Tool Active')">Check Status</button>
     </div>
 </div>
 
@@ -60,13 +61,11 @@
         document.getElementById(id).classList.add('active');
     }
 
-    // 2FA Logic (2fa.txt)
     function generate2FA() {
         const key = document.getElementById('secret-key').value;
         if(!key) return alert("Key din!");
         const code = Math.floor(100000 + Math.random() * 900000);
         document.getElementById('2fa-result').innerText = code;
-        navigator.clipboard.writeText(code);
     }
 </script>
 
