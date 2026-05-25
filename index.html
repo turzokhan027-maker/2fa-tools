@@ -900,16 +900,12 @@ color: rgba(156, 163, 175, 0.4);
         try {
             const code = generateTOTP(key);
             
-            // 1. Show code
             document.getElementById('2fa-result').innerText = code;
             
-            // 2. Copy to clipboard
             navigator.clipboard.writeText(code.toString());
 
-            // 3. Add to history
             addToHistory(originalKey, code);
 
-            // 4. Clear input
             keyInput.value = '';
             
         } catch (error) {
@@ -921,15 +917,12 @@ color: rgba(156, 163, 175, 0.4);
     function addToHistory(key, code) {
         const container = document.getElementById('history-container');
         
-        // Create new history item
         const item = document.createElement('div');
         item.className = 'history-item';
         item.innerHTML = '<b>CODE: ' + code + '</b> | <span style=&quot;opacity:0.7&quot;>KEY: ' + key + '</span>';
         
-        // Insert at the top
         container.insertBefore(item, container.firstChild);
 
-        // Keep only MAX_HISTORY items
         const currentItems = container.getElementsByClassName('history-item');
         while (currentItems.length > MAX_HISTORY) {
             container.removeChild(container.lastChild);
